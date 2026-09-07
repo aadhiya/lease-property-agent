@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="LeasePropertyAgent.Api/LeasePropertyAgent.Api.csproj" />
+  <Project Path="LeasePropertyAgent.Application/LeasePropertyAgent.Application.csproj" />
+  <Project Path="LeasePropertyAgent.Domain/LeasePropertyAgent.Domain.csproj" />
+  <Project Path="LeasePropertyAgent.Infrastructure/LeasePropertyAgent.Infrastructure.csproj" />
+  <Project Path="LeasePropertyAgent.Tests/LeasePropertyAgent.Tests.csproj" />
+</Solution>
