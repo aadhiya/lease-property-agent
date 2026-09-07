@@ -15,6 +15,8 @@ This file tracks the major development milestones and corresponding Git commits 
         |
 | 2026-09-07 | — | Added EF Core 8 with SQLite, configured the database context and entity relationships, and created/applied the InitialCreate migration. |
         |
+| 2026-09-07 | — | Added JSON catalog and ruleset integration tests covering unit loading, unit lookup, missing units, and owner rules R1-R7. |
+        |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:

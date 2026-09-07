@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LeasePropertyAgent.Application\LeasePropertyAgent.Application.csproj" />
     <ProjectReference Include="..\LeasePropertyAgent.Domain\LeasePropertyAgent.Domain.csproj" />
+    <ProjectReference Include="..\LeasePropertyAgent.Infrastructure\LeasePropertyAgent.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
