@@ -312,11 +312,18 @@ public class LeasePropertyDbContext : DbContext
             entity.Property(x => x.CreatedAt)
                 .IsRequired();
 
-            entity.HasIndex(x => new
+            /* entity.HasIndex(x => new
             {
                 x.LeaseId,
                 x.RuleId
-            });
+            }); */
+            // A lease can be validated multiple times. Indexing the validation run
+// lets us efficiently retrieve all R1-R7 results from one execution.
+entity.HasIndex(x => new
+{
+    x.ValidationRunId,
+    x.RuleId
+});
         });
     }
 

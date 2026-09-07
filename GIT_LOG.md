@@ -17,6 +17,8 @@ This file tracks the major development milestones and corresponding Git commits 
         |
 | 2026-09-07 | — | Added JSON catalog and ruleset integration tests covering unit loading, unit lookup, missing units, and owner rules R1-R7. |
         |
+| 2026-09-07 | — | Added deterministic unit matching against the owner catalog, including available, occupied, unknown, and missing unit scenarios. |
+        | 
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
