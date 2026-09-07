@@ -69,13 +69,21 @@ if (r5Rule != null)
 {
     report.Results.Add(ValidatePartySignatureRule(lease, r5Rule));
 }
-// R6-R7 will be added incrementally as each rule is implemented.
+// R6: Annual rent must equal monthly rent multiplied by 12.
+var r6Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R6");
+
+if (r6Rule != null)
+{
+    report.Results.Add(ValidateAnnualRentRule(lease, r6Rule));
+}
+// R7 will be added once its validation logic is implemented.
 foreach (var rule in ruleset.Rules.Where(
              r => r.Id != "R1" &&
                   r.Id != "R2" &&
                   r.Id != "R3" &&
                   r.Id != "R4" &&
-                  r.Id != "R5"))
+                  r.Id != "R5" &&
+                  r.Id != "R6"))
 {
     report.Results.Add(new RuleValidationResult
     {
@@ -407,6 +415,61 @@ private static RuleValidationResult ValidatePartySignatureRule(
         RuleId = rule.Id,
         Status = "PASS",
         Reason = "Both landlord and tenant are present and both parties have recorded signatures.",
+        Severity = rule.Severity
+    };
+}
+/// <summary>
+/// Validates R6: annual rent must equal monthly rent multiplied by 12.
+///
+/// Missing rent values cannot be evaluated reliably, so the result is
+/// NOT_DETERMINABLE rather than an assumed failure.
+/// </summary>
+private static RuleValidationResult ValidateAnnualRentRule(
+    Lease lease,
+    OwnerRule rule)
+{
+    if (!lease.MonthlyRent.HasValue)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Monthly rent is missing from the extracted lease data.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!lease.AnnualRent.HasValue)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Annual rent is missing from the extracted lease data.",
+            Severity = rule.Severity
+        };
+    }
+
+    var expectedAnnualRent = lease.MonthlyRent.Value * 12;
+
+    if (lease.AnnualRent.Value == expectedAnnualRent)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "PASS",
+            Reason =
+                $"Annual rent ({lease.AnnualRent.Value}) equals monthly rent ({lease.MonthlyRent.Value}) multiplied by 12.",
+            Severity = rule.Severity
+        };
+    }
+
+    return new RuleValidationResult
+    {
+        RuleId = rule.Id,
+        Status = "FAIL",
+        Reason =
+            $"Annual rent ({lease.AnnualRent.Value}) does not equal monthly rent ({lease.MonthlyRent.Value}) multiplied by 12. Expected {expectedAnnualRent}.",
         Severity = rule.Severity
     };
 }

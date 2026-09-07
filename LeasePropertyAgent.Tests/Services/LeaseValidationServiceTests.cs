@@ -537,6 +537,75 @@ public async Task R5_ShouldBeNotDetermined_WhenTenantIsMissing()
 
     Assert.Equal("NOT_DETERMINABLE", r5.Status);
 }
+[Fact]
+public async Task R6_ShouldPass_WhenAnnualRentMatchesMonthlyRent()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.AnnualRent = 60000m;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r6 = result.Results.Single(r => r.RuleId == "R6");
+
+    Assert.Equal("PASS", r6.Status);
+    Assert.Equal("low", r6.Severity);
+}
+[Fact]
+public async Task R6_ShouldFail_WhenAnnualRentDoesNotMatchMonthlyRent()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.AnnualRent = 60001m;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r6 = result.Results.Single(r => r.RuleId == "R6");
+
+    Assert.Equal("FAIL", r6.Status);
+}
+[Fact]
+public async Task R6_ShouldBeNotDetermined_WhenMonthlyRentIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: null,
+        deposit: 5000m);
+
+    lease.AnnualRent = 60000m;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r6 = result.Results.Single(r => r.RuleId == "R6");
+
+    Assert.Equal("NOT_DETERMINABLE", r6.Status);
+}
+[Fact]
+public async Task R6_ShouldBeNotDetermined_WhenAnnualRentIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.AnnualRent = null;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r6 = result.Results.Single(r => r.RuleId == "R6");
+
+    Assert.Equal("NOT_DETERMINABLE", r6.Status);
+}
     private static Lease CreateLease(
         decimal? monthlyRent,
         decimal? deposit)

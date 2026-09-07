@@ -18,6 +18,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-07 | — | Added deterministic lease validation for R3, enforcing the maximum 36-month lease term with PASS, FAIL, and NOT_DETERMINABLE test coverage. |
 | 2026-09-07 | — | Added deterministic lease validation for R4, validating expiry/commencement ordering and consistency between declared lease term and calendar date difference, with comprehensive edge-case tests. |
 | 2026-09-07 | — | Added deterministic lease validation for R5, validating landlord and tenant presence and signatures with PASS, FAIL, and NOT_DETERMINABLE test coverage. |
+| 2026-09-07 | — | Added deterministic lease validation for R6, validating annual rent against monthly rent × 12 with PASS, FAIL, and NOT_DETERMINABLE test coverage. |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
