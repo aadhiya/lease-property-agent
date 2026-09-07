@@ -31,26 +31,34 @@ public class LeaseValidationService : ILeaseValidationService
 
         var report = new LeaseValidationReport();
 
-        // R1 is evaluated directly from the extracted lease values.
-        // The owner ruleset supplies the rule metadata such as severity.
-        var r1Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R1");
+        // R1: Deposit must be greater than or equal to monthly rent.
+var r1Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R1");
 
-        if (r1Rule != null)
-        {
-            report.Results.Add(ValidateDepositRule(lease, r1Rule));
-        }
+if (r1Rule != null)
+{
+    report.Results.Add(ValidateDepositRule(lease, r1Rule));
+}
 
-        // R2-R7 will be added incrementally as each rule is implemented.
-        foreach (var rule in ruleset.Rules.Where(r => r.Id != "R1"))
-        {
-            report.Results.Add(new RuleValidationResult
-            {
-                RuleId = rule.Id,
-                Status = "NOT_DETERMINABLE",
-                Reason = "Validation logic has not yet been implemented for this rule.",
-                Severity = rule.Severity
-            });
-        }
+// R2: An escalation clause must be defined.
+var r2Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R2");
+
+if (r2Rule != null)
+{
+    report.Results.Add(ValidateEscalationRule(lease, r2Rule));
+}
+
+// R3-R7 will be added incrementally as each rule is implemented.
+       foreach (var rule in ruleset.Rules.Where(
+             r => r.Id != "R1" && r.Id != "R2"))
+{
+    report.Results.Add(new RuleValidationResult
+    {
+        RuleId = rule.Id,
+        Status = "NOT_DETERMINABLE",
+        Reason = "Validation logic has not yet been implemented for this rule.",
+        Severity = rule.Severity
+    });
+}
 
         return report;
     }
@@ -109,4 +117,34 @@ public class LeaseValidationService : ILeaseValidationService
             Severity = rule.Severity
         };
     }
+    /// <summary>
+/// Validates R2: the lease must contain a defined escalation clause.
+///
+/// A known absence of an escalation clause is a FAIL because the
+/// owner's rules explicitly require one. We therefore do not treat
+/// IsDefined == false as missing information.
+/// </summary>
+private static RuleValidationResult ValidateEscalationRule(
+    Lease lease,
+    OwnerRule rule)
+{
+    if (lease.EscalationClause.IsDefined)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "PASS",
+            Reason = "An escalation clause is defined in the lease.",
+            Severity = rule.Severity
+        };
+    }
+
+    return new RuleValidationResult
+    {
+        RuleId = rule.Id,
+        Status = "FAIL",
+        Reason = "The lease does not contain a defined escalation clause.",
+        Severity = rule.Severity
+    };
+}
 }

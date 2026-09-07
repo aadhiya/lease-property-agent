@@ -87,7 +87,42 @@ public class LeaseValidationServiceTests
 
         Assert.Equal("NOT_DETERMINABLE", r1.Status);
     }
+[Fact]
+public async Task R2_ShouldPass_WhenEscalationClauseIsDefined()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
 
+    lease.EscalationClause.IsDefined = true;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r2 = result.Results.Single(r => r.RuleId == "R2");
+
+    Assert.Equal("PASS", r2.Status);
+    Assert.Equal("medium", r2.Severity);
+}
+[Fact]
+public async Task R2_ShouldFail_WhenEscalationClauseIsNotDefined()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.EscalationClause.IsDefined = false;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r2 = result.Results.Single(r => r.RuleId == "R2");
+
+    Assert.Equal("FAIL", r2.Status);
+    Assert.Equal("medium", r2.Severity);
+}
     private static Lease CreateLease(
         decimal? monthlyRent,
         decimal? deposit)

@@ -21,6 +21,8 @@ This file tracks the major development milestones and corresponding Git commits 
         | 
 | 2026-09-07 | — | Added deterministic lease validation engine with R1 deposit-to-monthly-rent validation and automated PASS, FAIL, and NOT_DETERMINABLE tests. |
         |
+| 2026-09-07 | — | Added deterministic lease validation for owner rules R1 and R2, including PASS, FAIL, NOT_DETERMINABLE handling and automated tests. |
+        |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
