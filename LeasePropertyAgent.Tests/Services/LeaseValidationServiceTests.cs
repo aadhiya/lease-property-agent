@@ -2,6 +2,7 @@ using LeasePropertyAgent.Application.Interfaces;
 using LeasePropertyAgent.Application.Models;
 using LeasePropertyAgent.Application.Services;
 using LeasePropertyAgent.Domain.Entities;
+using LeasePropertyAgent.Domain.Enums;
 using Xunit;
 
 namespace LeasePropertyAgent.Tests.Services;
@@ -344,6 +345,197 @@ public async Task R4_ShouldBeNotDetermined_WhenTermIsMissing()
     var r4 = result.Results.Single(r => r.RuleId == "R4");
 
     Assert.Equal("NOT_DETERMINABLE", r4.Status);
+}
+[Fact]
+public async Task R5_ShouldPass_WhenBothPartiesArePresentAndSigned()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Landlord,
+        Name = "Marina Crest Holdings W.L.L.",
+        IsPresent = true,
+        IsSigned = true
+    });
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Tenant,
+        Name = "John Smith",
+        IsPresent = true,
+        IsSigned = true
+    });
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r5 = result.Results.Single(r => r.RuleId == "R5");
+
+    Assert.Equal("PASS", r5.Status);
+    Assert.Equal("high", r5.Severity);
+}
+[Fact]
+public async Task R5_ShouldFail_WhenLandlordIsUnsigned()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Landlord,
+        Name = "Marina Crest Holdings W.L.L.",
+        IsPresent = true,
+        IsSigned = false
+    });
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Tenant,
+        Name = "John Smith",
+        IsPresent = true,
+        IsSigned = true
+    });
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r5 = result.Results.Single(r => r.RuleId == "R5");
+
+    Assert.Equal("FAIL", r5.Status);
+}
+[Fact]
+public async Task R5_ShouldFail_WhenTenantIsUnsigned()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Landlord,
+        Name = "Marina Crest Holdings W.L.L.",
+        IsPresent = true,
+        IsSigned = true
+    });
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Tenant,
+        Name = "John Smith",
+        IsPresent = true,
+        IsSigned = false
+    });
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r5 = result.Results.Single(r => r.RuleId == "R5");
+
+    Assert.Equal("FAIL", r5.Status);
+}
+[Fact]
+public async Task R5_ShouldFail_WhenBothPartiesAreUnsigned()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Landlord,
+        Name = "Marina Crest Holdings W.L.L.",
+        IsPresent = true,
+        IsSigned = false
+    });
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Tenant,
+        Name = "John Smith",
+        IsPresent = true,
+        IsSigned = false
+    });
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r5 = result.Results.Single(r => r.RuleId == "R5");
+
+    Assert.Equal("FAIL", r5.Status);
+}
+[Fact]
+public async Task R5_ShouldBeNotDetermined_WhenLandlordIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Tenant,
+        Name = "John Smith",
+        IsPresent = true,
+        IsSigned = true
+    });
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r5 = result.Results.Single(r => r.RuleId == "R5");
+
+    Assert.Equal("NOT_DETERMINABLE", r5.Status);
+}
+[Fact]
+public async Task R5_ShouldBeNotDetermined_WhenTenantIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.Parties.Add(new LeaseParty
+    {
+        Id = Guid.NewGuid(),
+        LeaseId = lease.Id,
+        Role = PartyRole.Landlord,
+        Name = "Marina Crest Holdings W.L.L.",
+        IsPresent = true,
+        IsSigned = true
+    });
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r5 = result.Results.Single(r => r.RuleId == "R5");
+
+    Assert.Equal("NOT_DETERMINABLE", r5.Status);
 }
     private static Lease CreateLease(
         decimal? monthlyRent,

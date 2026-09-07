@@ -1,6 +1,7 @@
 using LeasePropertyAgent.Application.Interfaces;
 using LeasePropertyAgent.Application.Models;
 using LeasePropertyAgent.Domain.Entities;
+using LeasePropertyAgent.Domain.Enums;
 
 namespace LeasePropertyAgent.Application.Services;
 
@@ -61,12 +62,20 @@ if (r4Rule != null)
 {
     report.Results.Add(ValidateLeaseDateRule(lease, r4Rule));
 }
-// R5-R7 will be added incrementally as each rule is implemented.
+// R5: Landlord and tenant must both be present and signed.
+var r5Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R5");
+
+if (r5Rule != null)
+{
+    report.Results.Add(ValidatePartySignatureRule(lease, r5Rule));
+}
+// R6-R7 will be added incrementally as each rule is implemented.
 foreach (var rule in ruleset.Rules.Where(
              r => r.Id != "R1" &&
                   r.Id != "R2" &&
                   r.Id != "R3" &&
-                  r.Id != "R4"))
+                  r.Id != "R4" &&
+                  r.Id != "R5"))
 {
     report.Results.Add(new RuleValidationResult
     {
@@ -314,5 +323,91 @@ private static int CalculateCompleteMonthsBetween(
     }
 
     return months;
+}
+/// <summary>
+/// Validates R5:
+///
+/// - A landlord must be present.
+/// - A tenant must be present.
+/// - The landlord must be signed.
+/// - The tenant must be signed.
+///
+/// Missing party information results in NOT_DETERMINABLE because
+/// the system cannot safely conclude that the requirement has failed.
+/// If both parties are present but either signature is missing,
+/// the rule definitively fails.
+/// </summary>
+private static RuleValidationResult ValidatePartySignatureRule(
+    Lease lease,
+    OwnerRule rule)
+{
+    var landlord = lease.Parties
+        .FirstOrDefault(p => p.Role == PartyRole.Landlord);
+
+    var tenant = lease.Parties
+        .FirstOrDefault(p => p.Role == PartyRole.Tenant);
+
+    if (landlord == null || !landlord.IsPresent)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Landlord information is missing or could not be established from the lease.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (tenant == null || !tenant.IsPresent)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Tenant information is missing or could not be established from the lease.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!landlord.IsSigned && !tenant.IsSigned)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "FAIL",
+            Reason = "Both landlord and tenant are present, but neither party has a recorded signature.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!landlord.IsSigned)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "FAIL",
+            Reason = "Landlord is present but the landlord signature is missing.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!tenant.IsSigned)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "FAIL",
+            Reason = "Tenant is present but the tenant signature is missing.",
+            Severity = rule.Severity
+        };
+    }
+
+    return new RuleValidationResult
+    {
+        RuleId = rule.Id,
+        Status = "PASS",
+        Reason = "Both landlord and tenant are present and both parties have recorded signatures.",
+        Severity = rule.Severity
+    };
 }
 }
