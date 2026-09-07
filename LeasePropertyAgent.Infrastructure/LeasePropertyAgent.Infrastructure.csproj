@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <ItemGroup>
+    <ProjectReference Include="..\LeasePropertyAgent.Application\LeasePropertyAgent.Application.csproj" />
+    <ProjectReference Include="..\LeasePropertyAgent.Domain\LeasePropertyAgent.Domain.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

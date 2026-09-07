@@ -20,4 +20,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LeasePropertyAgent.Application\LeasePropertyAgent.Application.csproj" />
+    <ProjectReference Include="..\LeasePropertyAgent.Domain\LeasePropertyAgent.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
