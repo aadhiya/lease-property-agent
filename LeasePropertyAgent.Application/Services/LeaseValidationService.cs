@@ -16,11 +16,13 @@ namespace LeasePropertyAgent.Application.Services;
 public class LeaseValidationService : ILeaseValidationService
 {
     private readonly IOwnerRulesetProvider _ownerRulesetProvider;
+    //private readonly UnitMatchingService _unitMatchingService;
 
     public LeaseValidationService(
         IOwnerRulesetProvider ownerRulesetProvider)
     {
         _ownerRulesetProvider = ownerRulesetProvider;
+       
     }
 
     public async Task<LeaseValidationReport> ValidateAsync(
@@ -76,8 +78,20 @@ if (r6Rule != null)
 {
     report.Results.Add(ValidateAnnualRentRule(lease, r6Rule));
 }
+// R7: The lease unit must exist in the owner catalog and
+// must currently be available for lease assignment.
+// R7: Unit must exist in the owner catalog and be available.
+var r7Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R7");
+
+if (r7Rule != null)
+{
+    report.Results.Add(
+        ValidateUnitAvailabilityRule(
+            unitMatchResult,
+            r7Rule));
+}
 // R7 will be added once its validation logic is implemented.
-foreach (var rule in ruleset.Rules.Where(
+/* foreach (var rule in ruleset.Rules.Where(
              r => r.Id != "R1" &&
                   r.Id != "R2" &&
                   r.Id != "R3" &&
@@ -92,7 +106,7 @@ foreach (var rule in ruleset.Rules.Where(
         Reason = "Validation logic has not yet been implemented for this rule.",
         Severity = rule.Severity
     });
-}
+} */
         return report;
     }
 
@@ -470,6 +484,61 @@ private static RuleValidationResult ValidateAnnualRentRule(
         Status = "FAIL",
         Reason =
             $"Annual rent ({lease.AnnualRent.Value}) does not equal monthly rent ({lease.MonthlyRent.Value}) multiplied by 12. Expected {expectedAnnualRent}.",
+        Severity = rule.Severity
+    };
+}
+/// <summary>
+/// Validates R7 using the result produced by the deterministic
+/// UnitMatchingService.
+///
+/// The unit must exist in the owner catalog and have an available
+/// status before the lease can be linked to it.
+/// </summary>
+private static RuleValidationResult ValidateUnitAvailabilityRule(
+    UnitMatchResult? unitMatchResult,
+    OwnerRule rule)
+{
+    if (unitMatchResult == null)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Unit matching information was not provided.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!unitMatchResult.Exists)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "FAIL",
+            Reason =
+                $"Unit '{unitMatchResult.UnitId}' does not exist in the owner unit catalog.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!unitMatchResult.IsAvailable)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "FAIL",
+            Reason =
+                $"Unit '{unitMatchResult.UnitId}' exists but is currently {unitMatchResult.CurrentStatus}.",
+            Severity = rule.Severity
+        };
+    }
+
+    return new RuleValidationResult
+    {
+        RuleId = rule.Id,
+        Status = "PASS",
+        Reason =
+            $"Unit '{unitMatchResult.UnitId}' exists in the owner catalog and is available.",
         Severity = rule.Severity
     };
 }

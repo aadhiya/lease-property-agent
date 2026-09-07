@@ -606,6 +606,98 @@ public async Task R6_ShouldBeNotDetermined_WhenAnnualRentIsMissing()
 
     Assert.Equal("NOT_DETERMINABLE", r6.Status);
 }
+[Fact]
+public async Task R7_ShouldPass_WhenUnitExistsAndIsAvailable()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    var unitMatch = new UnitMatchResult
+    {
+        Exists = true,
+        IsAvailable = true,
+        CanLinkLease = true,
+        UnitId = "MC-B-1204",
+        UnitLabel = "Apartment 1204",
+        CurrentStatus = "available",
+        Reason = "Unit exists and is available."
+    };
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, unitMatch);
+
+    var r7 = result.Results.Single(r => r.RuleId == "R7");
+
+    Assert.Equal("PASS", r7.Status);
+    Assert.Equal("high", r7.Severity);
+}
+[Fact]
+public async Task R7_ShouldFail_WhenUnitExistsButIsOccupied()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    var unitMatch = new UnitMatchResult
+    {
+        Exists = true,
+        IsAvailable = false,
+        CanLinkLease = false,
+        UnitId = "MC-B-1205",
+        UnitLabel = "Apartment 1205",
+        CurrentStatus = "occupied",
+        Reason = "Unit exists but is occupied."
+    };
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, unitMatch);
+
+    var r7 = result.Results.Single(r => r.RuleId == "R7");
+
+    Assert.Equal("FAIL", r7.Status);
+}
+[Fact]
+public async Task R7_ShouldFail_WhenUnitDoesNotExist()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    var unitMatch = new UnitMatchResult
+    {
+        Exists = false,
+        IsAvailable = false,
+        CanLinkLease = false,
+        UnitId = "UNKNOWN-001",
+        Reason = "Unit was not found in the owner catalog."
+    };
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, unitMatch);
+
+    var r7 = result.Results.Single(r => r.RuleId == "R7");
+
+    Assert.Equal("FAIL", r7.Status);
+}
+[Fact]
+public async Task R7_ShouldBeNotDetermined_WhenUnitMatchIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r7 = result.Results.Single(r => r.RuleId == "R7");
+
+    Assert.Equal("NOT_DETERMINABLE", r7.Status);
+}
     private static Lease CreateLease(
         decimal? monthlyRent,
         decimal? deposit)
