@@ -10,6 +10,9 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-07 | —      | Created the .NET 8 solution with API, Domain, Application, Infrastructure, and Test projects. Verified that the complete solution builds successfully. |
         |
 | 2026-09-07 | — | Configured project dependencies following a clean architecture: API → Application → Domain, with Infrastructure implementing application/domain concerns. |
+        |
+| 2026-09-07 | `chore: configure project architecture` | Configured the .NET solution with separate API, Application, Domain, Infrastructure, and Test projects and verified the complete solution builds successfully. |
+        |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
