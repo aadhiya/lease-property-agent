@@ -53,11 +53,20 @@ if (r3Rule != null)
 {
     report.Results.Add(ValidateTermRule(lease, r3Rule));
 }
-// R4-R7 will be added incrementally as each rule is implemented.
+// R4: Expiry must be after commencement and the declared term
+// must match the number of complete calendar months between the dates.
+var r4Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R4");
+
+if (r4Rule != null)
+{
+    report.Results.Add(ValidateLeaseDateRule(lease, r4Rule));
+}
+// R5-R7 will be added incrementally as each rule is implemented.
 foreach (var rule in ruleset.Rules.Where(
              r => r.Id != "R1" &&
                   r.Id != "R2" &&
-                  r.Id != "R3"))
+                  r.Id != "R3" &&
+                  r.Id != "R4"))
 {
     report.Results.Add(new RuleValidationResult
     {
@@ -195,5 +204,115 @@ private static RuleValidationResult ValidateTermRule(
             $"Lease term ({lease.TermMonths.Value} months) exceeds the maximum allowed term of 36 months.",
         Severity = rule.Severity
     };
+}
+/// <summary>
+/// Validates R4:
+///
+/// 1. Expiry date must be after commencement date.
+/// 2. The declared term must match the number of complete calendar
+///    months between commencement and expiry.
+///
+/// Missing dates or term information cannot safely be evaluated,
+/// therefore those cases return NOT_DETERMINABLE.
+/// </summary>
+private static RuleValidationResult ValidateLeaseDateRule(
+    Lease lease,
+    OwnerRule rule)
+{
+    if (!lease.CommencementDate.HasValue)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Commencement date is missing from the extracted lease data.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!lease.ExpiryDate.HasValue)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Expiry date is missing from the extracted lease data.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (!lease.TermMonths.HasValue)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Lease term is missing from the extracted lease data.",
+            Severity = rule.Severity
+        };
+    }
+
+    var commencementDate = lease.CommencementDate.Value;
+    var expiryDate = lease.ExpiryDate.Value;
+
+    if (expiryDate <= commencementDate)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "FAIL",
+            Reason =
+                $"Expiry date ({expiryDate:yyyy-MM-dd}) must be after commencement date ({commencementDate:yyyy-MM-dd}).",
+            Severity = rule.Severity
+        };
+    }
+
+    var calculatedMonths = CalculateCompleteMonthsBetween(
+        commencementDate,
+        expiryDate);
+
+    if (lease.TermMonths.Value != calculatedMonths)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "FAIL",
+            Reason =
+                $"Declared lease term ({lease.TermMonths.Value} months) does not match the calculated term of {calculatedMonths} months between the commencement and expiry dates.",
+            Severity = rule.Severity
+        };
+    }
+
+    return new RuleValidationResult
+    {
+        RuleId = rule.Id,
+        Status = "PASS",
+        Reason =
+            $"Expiry date is after commencement date and the declared term ({lease.TermMonths.Value} months) matches the calculated date difference.",
+        Severity = rule.Severity
+    };
+}
+
+/// <summary>
+/// Calculates complete calendar months between two dates.
+///
+/// If the expiry day occurs before the commencement day within the
+/// final month, that partial month is not counted as a complete month.
+/// </summary>
+private static int CalculateCompleteMonthsBetween(
+    DateTime commencementDate,
+    DateTime expiryDate)
+{
+    var months =
+        ((expiryDate.Year - commencementDate.Year) * 12)
+        + expiryDate.Month
+        - commencementDate.Month;
+
+    if (expiryDate.Day < commencementDate.Day)
+    {
+        months--;
+    }
+
+    return months;
 }
 }

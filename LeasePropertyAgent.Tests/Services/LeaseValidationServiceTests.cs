@@ -192,6 +192,159 @@ public async Task R3_ShouldBeNotDetermined_WhenTermIsMissing()
 
     Assert.Equal("NOT_DETERMINABLE", r3.Status);
 }
+[Fact]
+public async Task R4_ShouldPass_WhenDatesAndTermMatch()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = new DateTime(2026, 1, 1);
+    lease.ExpiryDate = new DateTime(2027, 1, 1);
+    lease.TermMonths = 12;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("PASS", r4.Status);
+    Assert.Equal("high", r4.Severity);
+}
+[Fact]
+public async Task R4_ShouldPass_WhenTermIsExactly36Months()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = new DateTime(2026, 1, 1);
+    lease.ExpiryDate = new DateTime(2029, 1, 1);
+    lease.TermMonths = 36;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("PASS", r4.Status);
+}
+[Fact]
+public async Task R4_ShouldFail_WhenDeclaredTermDoesNotMatchDates()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = new DateTime(2026, 1, 1);
+    lease.ExpiryDate = new DateTime(2027, 1, 1);
+    lease.TermMonths = 24;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("FAIL", r4.Status);
+}
+[Fact]
+public async Task R4_ShouldFail_WhenExpiryIsBeforeCommencement()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = new DateTime(2027, 1, 1);
+    lease.ExpiryDate = new DateTime(2026, 1, 1);
+    lease.TermMonths = 12;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("FAIL", r4.Status);
+}
+[Fact]
+public async Task R4_ShouldFail_WhenExpiryEqualsCommencement()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = new DateTime(2026, 1, 1);
+    lease.ExpiryDate = new DateTime(2026, 1, 1);
+    lease.TermMonths = 0;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("FAIL", r4.Status);
+}
+[Fact]
+public async Task R4_ShouldBeNotDetermined_WhenCommencementDateIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = null;
+    lease.ExpiryDate = new DateTime(2027, 1, 1);
+    lease.TermMonths = 12;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("NOT_DETERMINABLE", r4.Status);
+}
+[Fact]
+public async Task R4_ShouldBeNotDetermined_WhenExpiryDateIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = new DateTime(2026, 1, 1);
+    lease.ExpiryDate = null;
+    lease.TermMonths = 12;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("NOT_DETERMINABLE", r4.Status);
+}
+[Fact]
+public async Task R4_ShouldBeNotDetermined_WhenTermIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.CommencementDate = new DateTime(2026, 1, 1);
+    lease.ExpiryDate = new DateTime(2027, 1, 1);
+    lease.TermMonths = null;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r4 = result.Results.Single(r => r.RuleId == "R4");
+
+    Assert.Equal("NOT_DETERMINABLE", r4.Status);
+}
     private static Lease CreateLease(
         decimal? monthlyRent,
         decimal? deposit)
