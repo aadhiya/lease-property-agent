@@ -13,6 +13,8 @@ This file tracks the major development milestones and corresponding Git commits 
         |
 | 2026-09-07 | `chore: configure project architecture` | Configured the .NET solution with separate API, Application, Domain, Infrastructure, and Test projects and verified the complete solution builds successfully. |
         |
+| 2026-09-07 | — | Added EF Core 8 with SQLite, configured the database context and entity relationships, and created/applied the InitialCreate migration. |
+        |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
