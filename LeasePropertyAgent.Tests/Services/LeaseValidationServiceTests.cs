@@ -123,6 +123,75 @@ public async Task R2_ShouldFail_WhenEscalationClauseIsNotDefined()
     Assert.Equal("FAIL", r2.Status);
     Assert.Equal("medium", r2.Severity);
 }
+[Fact]
+public async Task R3_ShouldPass_WhenTermIsLessThan36Months()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.TermMonths = 24;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r3 = result.Results.Single(r => r.RuleId == "R3");
+
+    Assert.Equal("PASS", r3.Status);
+    Assert.Equal("medium", r3.Severity);
+}
+[Fact]
+public async Task R3_ShouldPass_WhenTermIsExactly36Months()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.TermMonths = 36;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r3 = result.Results.Single(r => r.RuleId == "R3");
+
+    Assert.Equal("PASS", r3.Status);
+}
+[Fact]
+public async Task R3_ShouldFail_WhenTermExceeds36Months()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.TermMonths = 37;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r3 = result.Results.Single(r => r.RuleId == "R3");
+
+    Assert.Equal("FAIL", r3.Status);
+}
+[Fact]
+public async Task R3_ShouldBeNotDetermined_WhenTermIsMissing()
+{
+    var lease = CreateLease(
+        monthlyRent: 5000m,
+        deposit: 5000m);
+
+    lease.TermMonths = null;
+
+    var service = CreateService();
+
+    var result = await service.ValidateAsync(lease, null);
+
+    var r3 = result.Results.Single(r => r.RuleId == "R3");
+
+    Assert.Equal("NOT_DETERMINABLE", r3.Status);
+}
     private static Lease CreateLease(
         decimal? monthlyRent,
         decimal? deposit)

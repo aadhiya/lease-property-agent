@@ -23,6 +23,8 @@ This file tracks the major development milestones and corresponding Git commits 
         |
 | 2026-09-07 | — | Added deterministic lease validation for owner rules R1 and R2, including PASS, FAIL, NOT_DETERMINABLE handling and automated tests. |
         |
+| 2026-09-07 | — | Added deterministic lease validation for R3, enforcing the maximum 36-month lease term with PASS, FAIL, and NOT_DETERMINABLE test coverage. |
+        |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:

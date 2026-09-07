@@ -46,10 +46,18 @@ if (r2Rule != null)
 {
     report.Results.Add(ValidateEscalationRule(lease, r2Rule));
 }
+// R3: Lease term must not exceed 36 months.
+var r3Rule = ruleset.Rules.FirstOrDefault(r => r.Id == "R3");
 
-// R3-R7 will be added incrementally as each rule is implemented.
-       foreach (var rule in ruleset.Rules.Where(
-             r => r.Id != "R1" && r.Id != "R2"))
+if (r3Rule != null)
+{
+    report.Results.Add(ValidateTermRule(lease, r3Rule));
+}
+// R4-R7 will be added incrementally as each rule is implemented.
+foreach (var rule in ruleset.Rules.Where(
+             r => r.Id != "R1" &&
+                  r.Id != "R2" &&
+                  r.Id != "R3"))
 {
     report.Results.Add(new RuleValidationResult
     {
@@ -59,7 +67,6 @@ if (r2Rule != null)
         Severity = rule.Severity
     });
 }
-
         return report;
     }
 
@@ -144,6 +151,48 @@ private static RuleValidationResult ValidateEscalationRule(
         RuleId = rule.Id,
         Status = "FAIL",
         Reason = "The lease does not contain a defined escalation clause.",
+        Severity = rule.Severity
+    };
+}
+/// <summary>
+/// Validates R3: the lease term must not exceed 36 months.
+///
+/// A missing term cannot be safely interpreted as either compliant
+/// or non-compliant, so the result is NOT_DETERMINABLE.
+/// </summary>
+private static RuleValidationResult ValidateTermRule(
+    Lease lease,
+    OwnerRule rule)
+{
+    if (!lease.TermMonths.HasValue)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "NOT_DETERMINABLE",
+            Reason = "Lease term is missing from the extracted lease data.",
+            Severity = rule.Severity
+        };
+    }
+
+    if (lease.TermMonths.Value <= 36)
+    {
+        return new RuleValidationResult
+        {
+            RuleId = rule.Id,
+            Status = "PASS",
+            Reason =
+                $"Lease term ({lease.TermMonths.Value} months) does not exceed the maximum allowed term of 36 months.",
+            Severity = rule.Severity
+        };
+    }
+
+    return new RuleValidationResult
+    {
+        RuleId = rule.Id,
+        Status = "FAIL",
+        Reason =
+            $"Lease term ({lease.TermMonths.Value} months) exceeds the maximum allowed term of 36 months.",
         Severity = rule.Severity
     };
 }
