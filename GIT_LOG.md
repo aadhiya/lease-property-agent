@@ -20,6 +20,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-07 | — | Added deterministic lease validation for R5, validating landlord and tenant presence and signatures with PASS, FAIL, and NOT_DETERMINABLE test coverage. |
 | 2026-09-07 | — | Added deterministic lease validation for R6, validating annual rent against monthly rent × 12 with PASS, FAIL, and NOT_DETERMINABLE test coverage. |
 | 2026-09-07 | — | Completed deterministic lease validation rules R1-R7, covering rent, escalation, term, date consistency, parties/signatures, annual rent, and unit availability with automated PASS, FAIL, and NOT_DETERMINABLE tests. |
+| 2026-09-08 | — | Added page-aware document extraction and a stub lease agent with structured lease fields, confidence scores, source references, and extraction flags. | 
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
