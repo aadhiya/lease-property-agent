@@ -47,10 +47,28 @@ public class LeaseProcessingServiceTests
         var validationService =
             new FakeLeaseValidationService(validationReport);
 
+        // The application layer works with the external unit number,
+        // while Lease.UnitId must contain the internal database Guid.
+        var databaseUnitId = Guid.NewGuid();
+
+        var unitRepository = new FakeUnitRepository(
+            new Unit
+            {
+                Id = databaseUnitId,
+                UnitNumber = "MC-B-1204",
+                UnitType = "2BR",
+                Area = 118m,
+                Status = UnitStatus.Available
+            });
+
+        var leaseRepository = new FakeLeaseRepository();
+
         var service = new LeaseProcessingService(
             leaseAgent,
             unitMatchingService,
-            validationService);
+            validationService,
+            unitRepository,
+            leaseRepository);
 
         // Act
         var result = await service.ProcessAsync(
@@ -97,6 +115,31 @@ public class LeaseProcessingServiceTests
 
         Assert.True(
             validationService.WasCalled);
+
+        // Verify that the external unit number was resolved to the
+        // internal database Guid before persistence.
+        Assert.True(
+            unitRepository.WasCalled);
+
+        Assert.Equal(
+            "MC-B-1204",
+            unitRepository.ReceivedUnitNumber);
+
+        Assert.Equal(
+            databaseUnitId,
+            result.Lease.UnitId);
+
+        // Verify that the complete lease aggregate was handed to
+        // the persistence layer.
+        Assert.True(
+            leaseRepository.AddWasCalled);
+
+        Assert.True(
+            leaseRepository.SaveChangesWasCalled);
+
+        Assert.Same(
+            result.Lease,
+            leaseRepository.AddedLease);
     }
 
     [Fact]
@@ -133,17 +176,25 @@ public class LeaseProcessingServiceTests
         var validationService =
             new FakeLeaseValidationService(validationReport);
 
+        // No database unit should be requested when the extraction
+        // does not contain a unit identifier.
+        var unitRepository = new FakeUnitRepository(null);
+        var leaseRepository = new FakeLeaseRepository();
+
         var service = new LeaseProcessingService(
             leaseAgent,
             unitMatchingService,
-            validationService);
+            validationService,
+            unitRepository,
+            leaseRepository);
 
         // Act
         var result = await service.ProcessAsync(
             "sample-lease.txt");
 
         // Assert
-        Assert.Null(result.Extraction.UnitId);
+        Assert.Null(
+            result.Extraction.UnitId);
 
         Assert.False(
             result.UnitMatch.CanLinkLease);
@@ -161,6 +212,17 @@ public class LeaseProcessingServiceTests
 
         Assert.Null(
             unitMatchingService.ReceivedUnitId);
+
+        Assert.False(
+            unitRepository.WasCalled);
+
+        // The lease is still persisted for human review even though
+        // it could not be linked to a unit.
+        Assert.True(
+            leaseRepository.AddWasCalled);
+
+        Assert.True(
+            leaseRepository.SaveChangesWasCalled);
     }
 
     [Fact]
@@ -193,21 +255,57 @@ public class LeaseProcessingServiceTests
             new FakeLeaseValidationService(
                 new LeaseValidationReport());
 
+        var unitRepository = new FakeUnitRepository(
+            new Unit
+            {
+                Id = Guid.NewGuid(),
+                UnitNumber = "MC-B-1204",
+                Status = UnitStatus.Available
+            });
+
+        var leaseRepository = new FakeLeaseRepository();
+
         var service = new LeaseProcessingService(
             leaseAgent,
             unitMatchingService,
-            validationService);
+            validationService,
+            unitRepository,
+            leaseRepository);
 
         // Act
         var result = await service.ProcessAsync(
             "sample-lease.txt");
 
         // Assert
-        Assert.Single(result.Extraction.Flags);
+        Assert.Single(
+            result.Extraction.Flags);
 
         Assert.Equal(
             "SuspiciousValue",
             result.Extraction.Flags[0].Type);
+
+        // Verify the flag was also mapped into the persisted domain
+        // aggregate rather than existing only in the agent result.
+        Assert.Single(
+            result.Lease.Flags);
+
+        Assert.Equal(
+            "SuspiciousValue",
+            result.Lease.Flags[0].Type);
+
+        Assert.Equal(
+            FlagSeverity.High,
+            result.Lease.Flags[0].Severity);
+
+        Assert.Equal(
+            ReviewStatus.Pending,
+            result.Lease.Flags[0].Status);
+
+        Assert.True(
+            leaseRepository.AddWasCalled);
+
+        Assert.True(
+            leaseRepository.SaveChangesWasCalled);
     }
 
     private static LeaseExtractionResult CreateExtractionResult()
@@ -261,6 +359,64 @@ public class LeaseProcessingServiceTests
             WasCalled = true;
 
             return Task.FromResult(_result);
+        }
+    }
+
+    private sealed class FakeUnitRepository : IUnitRepository
+    {
+        private readonly Unit? _unit;
+
+        public bool WasCalled { get; private set; }
+
+        public string? ReceivedUnitNumber { get; private set; }
+
+        public FakeUnitRepository(Unit? unit)
+        {
+            _unit = unit;
+        }
+
+        public Task<Unit?> GetByUnitNumberAsync(
+            string unitNumber,
+            CancellationToken cancellationToken = default)
+        {
+            WasCalled = true;
+            ReceivedUnitNumber = unitNumber;
+
+            return Task.FromResult(_unit);
+        }
+    }
+
+    private sealed class FakeLeaseRepository : ILeaseRepository
+    {
+        public bool AddWasCalled { get; private set; }
+
+        public bool SaveChangesWasCalled { get; private set; }
+
+        public Lease? AddedLease { get; private set; }
+
+        public Task<Lease?> GetByIdAsync(
+            Guid leaseId,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Lease?>(null);
+        }
+
+        public Task AddAsync(
+            Lease lease,
+            CancellationToken cancellationToken = default)
+        {
+            AddWasCalled = true;
+            AddedLease = lease;
+
+            return Task.CompletedTask;
+        }
+
+        public Task SaveChangesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            SaveChangesWasCalled = true;
+
+            return Task.CompletedTask;
         }
     }
 
