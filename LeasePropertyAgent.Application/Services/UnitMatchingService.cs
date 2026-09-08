@@ -3,7 +3,7 @@ using LeasePropertyAgent.Application.Models;
 
 namespace LeasePropertyAgent.Application.Services;
 
-public class UnitMatchingService
+public class UnitMatchingService : IUnitMatchingService
 {
     private readonly IUnitCatalogProvider _unitCatalogProvider;
 
@@ -13,7 +13,7 @@ public class UnitMatchingService
     }
 
     public async Task<UnitMatchResult> MatchUnitAsync(
-        string unitId,
+        string? unitId,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(unitId))
