@@ -26,6 +26,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-08 | — | Added SQLite persistence infrastructure with lease and unit repositories, plus a property catalog seeder to synchronize the JSON property/unit catalog with the relational domain model. |
 | 2026-09-08 | — | Added SQLite persistence infrastructure with lease and unit repositories, plus a property catalog seeder to synchronize the JSON property/unit catalog with the relational domain model. Added integration tests covering catalog import and idempotent seeding. |
 | 2026-09-08 | — | Connected lease processing to persistence abstractions, including database unit resolution, domain mapping of extracted fields and flags, validation result persistence, and repository-based lease saving. |
+| 2026-09-08 | — | Added an integration test for complete lease aggregate persistence using SQLite, covering the property/building/unit hierarchy, lease parties, extracted fields and source evidence, flags, and validation results. Verified the persisted aggregate can be reloaded correctly from the database. |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
