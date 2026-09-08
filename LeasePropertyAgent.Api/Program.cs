@@ -4,6 +4,8 @@ using LeasePropertyAgent.Application.Interfaces;
 using LeasePropertyAgent.Infrastructure.DocumentExtraction;
 using LeasePropertyAgent.Infrastructure.LeaseAgents;
 using LeasePropertyAgent.Application.Services;
+using LeasePropertyAgent.Infrastructure.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -17,6 +19,8 @@ builder.Services.AddDbContext<LeasePropertyDbContext>(options =>
 builder.Services.AddScoped<ILeaseAgent, StubLeaseAgent>();
 builder.Services.AddScoped<IUnitMatchingService, UnitMatchingService>();
 builder.Services.AddScoped<ILeaseProcessingService, LeaseProcessingService>();
+builder.Services.AddScoped<ILeaseRepository, LeaseRepository>();
+builder.Services.AddScoped<IUnitRepository, UnitRepository>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

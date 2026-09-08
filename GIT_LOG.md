@@ -23,6 +23,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-08 | — | Added page-aware document extraction and a stub lease agent with structured lease fields, confidence scores, source references, and extraction flags. | 
 | 2026-09-08 | — | Completed the stub lease agent with evidence-driven field extraction, source traceability, confidence scores, missing-field detection, contradiction detection, and suspicious-value checks. |
 | 2026-09-08 | — | Added the lease processing orchestration service connecting lease extraction, unit matching, domain lease mapping, and deterministic validation into one testable workflow. |
+| 2026-09-08 | — | Added SQLite persistence infrastructure with lease and unit repositories, plus a property catalog seeder to synchronize the JSON property/unit catalog with the relational domain model. |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
