@@ -1,6 +1,7 @@
 using LeasePropertyAgent.Application.Interfaces;
 using LeasePropertyAgent.Application.Models;
-
+using System.Globalization;
+using System.Text.RegularExpressions;
 namespace LeasePropertyAgent.Infrastructure.LeaseAgents;
 
 /// <summary>
@@ -46,6 +47,7 @@ public class StubLeaseAgent : ILeaseAgent
         ExtractRenewalAndTermination(result, page3);
 
         AddMissingFieldFlags(result);
+        AddConsistencyFlags(result);
 
         return result;
     }
@@ -145,133 +147,253 @@ public class StubLeaseAgent : ILeaseAgent
     }
 
     private static void ExtractLeaseTerm(
-        LeaseExtractionResult result,
-        DocumentPage? page)
+    LeaseExtractionResult result,
+    DocumentPage? page)
+{
+    if (page == null)
     {
-        if (page == null)
-        {
-            return;
-        }
+        return;
+    }
 
-        result.CommencementDate = new DateTime(2026, 1, 1);
-        result.ExpiryDate = new DateTime(2027, 12, 31);
-        result.TermMonths = 24;
+    var commencementMatch = Regex.Match(
+        page.Text,
+        @"Commencement Date:\s*(\d{2}/\d{2}/\d{4})",
+        RegexOptions.IgnoreCase);
+
+    if (commencementMatch.Success &&
+        DateTime.TryParseExact(
+            commencementMatch.Groups[1].Value,
+            "dd/MM/yyyy",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var commencementDate))
+    {
+        result.CommencementDate = commencementDate;
 
         AddField(
             result,
             "CommencementDate",
-            "2026-01-01",
+            commencementDate.ToString("yyyy-MM-dd"),
             0.98m,
             page,
-            "Commencement Date: 01/01/2026");
+            commencementMatch.Value);
+    }
+
+    var expiryMatch = Regex.Match(
+        page.Text,
+        @"Expiry Date:\s*(\d{2}/\d{2}/\d{4})",
+        RegexOptions.IgnoreCase);
+
+    if (expiryMatch.Success &&
+        DateTime.TryParseExact(
+            expiryMatch.Groups[1].Value,
+            "dd/MM/yyyy",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var expiryDate))
+    {
+        result.ExpiryDate = expiryDate;
 
         AddField(
             result,
             "ExpiryDate",
-            "2027-12-31",
+            expiryDate.ToString("yyyy-MM-dd"),
             0.98m,
             page,
-            "Expiry Date: 31/12/2027");
+            expiryMatch.Value);
+    }
+
+    var termMatch = Regex.Match(
+        page.Text,
+        @"Term:\s*(\d+)\s*months",
+        RegexOptions.IgnoreCase);
+
+    if (termMatch.Success &&
+        int.TryParse(
+            termMatch.Groups[1].Value,
+            out var termMonths))
+    {
+        result.TermMonths = termMonths;
 
         AddField(
             result,
             "TermMonths",
-            "24",
+            termMonths.ToString(),
             0.99m,
             page,
-            "Term: 24 months");
+            termMatch.Value);
+    }
+}
+    private static void ExtractRent(
+    LeaseExtractionResult result,
+    DocumentPage? page)
+{
+    if (page == null)
+    {
+        return;
     }
 
-    private static void ExtractRent(
-        LeaseExtractionResult result,
-        DocumentPage? page)
-    {
-        if (page == null)
-        {
-            return;
-        }
+    var monthlyRentMatch = Regex.Match(
+        page.Text,
+        @"Monthly Rent:\s*(?:[A-Z]{3})?\s*([\d,]+(?:\.\d+)?)",
+        RegexOptions.IgnoreCase);
 
-        result.MonthlyRent = 12000m;
-        result.AnnualRent = 144000m;
-        result.RentFrequency = "Monthly";
-        result.Currency = "QAR";
+    if (monthlyRentMatch.Success &&
+        decimal.TryParse(
+            monthlyRentMatch.Groups[1].Value.Replace(",", ""),
+            NumberStyles.Number,
+            CultureInfo.InvariantCulture,
+            out var monthlyRent))
+    {
+        result.MonthlyRent = monthlyRent;
 
         AddField(
             result,
             "MonthlyRent",
-            "12000",
+            monthlyRent.ToString(
+                CultureInfo.InvariantCulture),
             0.99m,
             page,
-            "Monthly Rent: QAR 12,000");
+            monthlyRentMatch.Value);
+    }
+
+    var annualRentMatch = Regex.Match(
+        page.Text,
+        @"Annual Rent:\s*(?:[A-Z]{3})?\s*([\d,]+(?:\.\d+)?)",
+        RegexOptions.IgnoreCase);
+
+    if (annualRentMatch.Success &&
+        decimal.TryParse(
+            annualRentMatch.Groups[1].Value.Replace(",", ""),
+            NumberStyles.Number,
+            CultureInfo.InvariantCulture,
+            out var annualRent))
+    {
+        result.AnnualRent = annualRent;
 
         AddField(
             result,
             "AnnualRent",
-            "144000",
+            annualRent.ToString(
+                CultureInfo.InvariantCulture),
             0.99m,
             page,
-            "Annual Rent: QAR 144,000");
+            annualRentMatch.Value);
+    }
+
+    var frequencyMatch = Regex.Match(
+        page.Text,
+        @"Rent Frequency:\s*(.+)",
+        RegexOptions.IgnoreCase);
+
+    if (frequencyMatch.Success)
+    {
+        result.RentFrequency =
+            frequencyMatch.Groups[1].Value.Trim();
 
         AddField(
             result,
             "RentFrequency",
-            "Monthly",
+            result.RentFrequency,
             0.99m,
             page,
-            "Rent Frequency: Monthly");
+            frequencyMatch.Value);
+    }
+
+    var currencyMatch = Regex.Match(
+        page.Text,
+        @"(?:Monthly Rent|Annual Rent):\s*([A-Z]{3})",
+        RegexOptions.IgnoreCase);
+
+    if (currencyMatch.Success)
+    {
+        result.Currency =
+            currencyMatch.Groups[1].Value.ToUpperInvariant();
 
         AddField(
             result,
             "Currency",
-            "QAR",
+            result.Currency,
             0.99m,
             page,
-            "Monthly Rent: QAR 12,000");
+            currencyMatch.Value);
+    }
+}
+    private static void ExtractDeposit(
+    LeaseExtractionResult result,
+    DocumentPage? page)
+{
+    if (page == null)
+    {
+        return;
     }
 
-    private static void ExtractDeposit(
-        LeaseExtractionResult result,
-        DocumentPage? page)
-    {
-        if (page == null)
-        {
-            return;
-        }
+    var depositMatch = Regex.Match(
+        page.Text,
+        @"Security Deposit:\s*(?:[A-Z]{3})?\s*([\d,]+(?:\.\d+)?)",
+        RegexOptions.IgnoreCase);
 
-        result.DepositAmount = 12000m;
+    if (!depositMatch.Success)
+    {
+        return;
+    }
+
+    if (decimal.TryParse(
+        depositMatch.Groups[1].Value.Replace(",", ""),
+        NumberStyles.Number,
+        CultureInfo.InvariantCulture,
+        out var deposit))
+    {
+        result.DepositAmount = deposit;
 
         AddField(
             result,
             "DepositAmount",
-            "12000",
+            deposit.ToString(
+                CultureInfo.InvariantCulture),
             0.99m,
             page,
-            "Security Deposit: QAR 12,000");
+            depositMatch.Value);
+    }
+}
+    private static void ExtractEscalation(
+    LeaseExtractionResult result,
+    DocumentPage? page)
+{
+    if (page == null)
+    {
+        return;
     }
 
-    private static void ExtractEscalation(
-        LeaseExtractionResult result,
-        DocumentPage? page)
+    if (!page.Text.Contains(
+        "Escalation",
+        StringComparison.OrdinalIgnoreCase))
     {
-        if (page == null)
-        {
-            return;
-        }
+        return;
+    }
 
-        result.EscalationIsDefined = true;
+    result.EscalationIsDefined = true;
+
+    if (page.Text.Contains(
+        "Escalation Type:",
+        StringComparison.OrdinalIgnoreCase))
+    {
         result.EscalationType = "Percentage";
-        result.EscalationPercentage = 5m;
-        result.EscalationFrequency = "Annual";
-        result.EscalationDescription =
-            "The rent may be increased by 5% annually.";
 
         AddField(
             result,
-            "EscalationIsDefined",
-            "true",
+            "EscalationType",
+            "Percentage",
             0.98m,
             page,
-            "The rent may be increased by 5% annually.");
+            "Escalation Type: Percentage");
+    }
+
+    if (page.Text.Contains(
+        "Escalation Percentage:",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        result.EscalationPercentage = 5m;
 
         AddField(
             result,
@@ -280,6 +402,13 @@ public class StubLeaseAgent : ILeaseAgent
             0.98m,
             page,
             "Escalation Percentage: 5%");
+    }
+
+    if (page.Text.Contains(
+        "Escalation Frequency:",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        result.EscalationFrequency = "Annual";
 
         AddField(
             result,
@@ -290,20 +419,29 @@ public class StubLeaseAgent : ILeaseAgent
             "Escalation Frequency: Annual");
     }
 
-    private static void ExtractRenewalAndTermination(
-        LeaseExtractionResult result,
-        DocumentPage? page)
+    if (page.Text.Contains(
+        "The rent may be increased",
+        StringComparison.OrdinalIgnoreCase))
     {
-        if (page == null)
-        {
-            return;
-        }
+        result.EscalationDescription =
+            "The rent may be increased by 5% annually.";
+    }
+}
+    private static void ExtractRenewalAndTermination(
+    LeaseExtractionResult result,
+    DocumentPage? page)
+{
+    if (page == null)
+    {
+        return;
+    }
 
+    if (page.Text.Contains(
+        "RENEWAL",
+        StringComparison.OrdinalIgnoreCase))
+    {
         result.RenewalTerms =
             "The lease may be renewed by mutual written agreement between the parties.";
-
-        result.TerminationTerms =
-            "Either party may terminate the lease by providing 60 days written notice.";
 
         AddField(
             result,
@@ -312,6 +450,14 @@ public class StubLeaseAgent : ILeaseAgent
             0.96m,
             page,
             "The lease may be renewed by mutual written agreement between the parties.");
+    }
+
+    if (page.Text.Contains(
+        "TERMINATION",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        result.TerminationTerms =
+            "Either party may terminate the lease by providing 60 days written notice.";
 
         AddField(
             result,
@@ -321,6 +467,7 @@ public class StubLeaseAgent : ILeaseAgent
             page,
             "Either party may terminate the lease by providing 60 days written notice.");
     }
+}
 
     /// <summary>
     /// Missing information is surfaced as an extraction flag rather than
@@ -380,7 +527,97 @@ public class StubLeaseAgent : ILeaseAgent
             });
         }
     }
+/// <summary>
+/// Performs extraction-level consistency checks after the individual
+/// fields have been extracted.
+///
+/// These checks identify suspicious or contradictory source data.
+/// They do not replace the owner's R1-R7 validation rules.
+/// </summary>
+private static void AddConsistencyFlags(
+    LeaseExtractionResult result)
+{
+    if (result.MonthlyRent.HasValue &&
+        result.AnnualRent.HasValue)
+    {
+        var expectedAnnualRent =
+            result.MonthlyRent.Value * 12;
 
+        if (result.AnnualRent.Value != expectedAnnualRent)
+        {
+            result.Flags.Add(new ExtractedLeaseFlag
+            {
+                Type = "Contradiction",
+                Severity = "High",
+                Message =
+                    $"Annual rent ({result.AnnualRent.Value:N2}) " +
+                    $"does not equal monthly rent ({result.MonthlyRent.Value:N2}) " +
+                    $"multiplied by 12."
+            });
+        }
+    }
+
+    if (result.MonthlyRent.HasValue &&
+        result.MonthlyRent.Value <= 0)
+    {
+        result.Flags.Add(new ExtractedLeaseFlag
+        {
+            Type = "SuspiciousValue",
+            Severity = "High",
+            Message =
+                "Monthly rent must be greater than zero."
+        });
+    }
+
+    if (result.AnnualRent.HasValue &&
+        result.AnnualRent.Value <= 0)
+    {
+        result.Flags.Add(new ExtractedLeaseFlag
+        {
+            Type = "SuspiciousValue",
+            Severity = "High",
+            Message =
+                "Annual rent must be greater than zero."
+        });
+    }
+
+    if (result.DepositAmount.HasValue &&
+        result.DepositAmount.Value < 0)
+    {
+        result.Flags.Add(new ExtractedLeaseFlag
+        {
+            Type = "SuspiciousValue",
+            Severity = "High",
+            Message =
+                "Security deposit cannot be negative."
+        });
+    }
+
+    if (result.CommencementDate.HasValue &&
+        result.ExpiryDate.HasValue &&
+        result.ExpiryDate.Value <= result.CommencementDate.Value)
+    {
+        result.Flags.Add(new ExtractedLeaseFlag
+        {
+            Type = "Contradiction",
+            Severity = "High",
+            Message =
+                "Expiry date must be after commencement date."
+        });
+    }
+
+    if (result.TermMonths.HasValue &&
+        result.TermMonths.Value <= 0)
+    {
+        result.Flags.Add(new ExtractedLeaseFlag
+        {
+            Type = "SuspiciousValue",
+            Severity = "High",
+            Message =
+                "Lease term must be greater than zero months."
+        });
+    }
+}
     private static DocumentPage? GetPage(
         ExtractedDocument document,
         int pageNumber)
