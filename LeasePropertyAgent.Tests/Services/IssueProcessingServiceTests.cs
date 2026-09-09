@@ -338,5 +338,11 @@ public class IssueProcessingServiceTests
         {
             return Task.FromResult(_unit);
         }
+         public Task<Unit?> GetWorkspaceByIdAsync(
+        Guid unitId,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<Unit?>(null);
+    }
     }
 }

@@ -49,4 +49,40 @@ public class UnitRepository : IUnitRepository
             unit => unit.Id == unitId,
             cancellationToken);
 }
+public async Task<Unit?> GetWorkspaceByIdAsync(
+    Guid unitId,
+    CancellationToken cancellationToken = default)
+{
+    if (unitId == Guid.Empty)
+    {
+        return null;
+    }
+
+    return await _dbContext.Units
+        .Include(unit => unit.Building)
+            .ThenInclude(building => building!.Property)
+
+        .Include(unit => unit.Leases)
+            .ThenInclude(lease => lease.Parties)
+
+        .Include(unit => unit.Leases)
+            .ThenInclude(lease => lease.Fields)
+
+        .Include(unit => unit.Leases)
+            .ThenInclude(lease => lease.Flags)
+
+        .Include(unit => unit.Leases)
+            .ThenInclude(lease => lease.ValidationResults)
+
+        .Include(unit => unit.Issues)
+            .ThenInclude(issue => issue.Images)
+
+        .Include(unit => unit.Issues)
+            .ThenInclude(issue => issue.WorkOrders)
+
+        .AsSplitQuery()
+        .FirstOrDefaultAsync(
+            unit => unit.Id == unitId,
+            cancellationToken);
+}
 }

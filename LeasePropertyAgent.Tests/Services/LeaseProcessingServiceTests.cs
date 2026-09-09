@@ -391,6 +391,12 @@ public class LeaseProcessingServiceTests
     {
         return Task.FromResult<Unit?>(null);
     }
+     public Task<Unit?> GetWorkspaceByIdAsync(
+        Guid unitId,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<Unit?>(null);
+    }
 }    private sealed class FakeLeaseRepository : ILeaseRepository
     {
         public bool AddWasCalled { get; private set; }

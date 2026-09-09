@@ -42,6 +42,7 @@ builder.Services.AddScoped<IIssueProcessingService, IssueProcessingService>();
 builder.Services.AddScoped<IIssueRepository, IssueRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IUnitWorkspaceService, UnitWorkspaceService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
