@@ -33,6 +33,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-09 | — | Added review API endpoints for lease fields, lease flags, and work orders, exposing the human review workflow through HTTP endpoints with validation and not-found handling. | 
 | 2026-09-09 | — | Added HTTP integration coverage for the human review API, verifying lease field, lease flag, and work-order review endpoints, persistence, audit actions, and not-found handling; also isolated database integration tests from parallel execution. |
 | 2026-09-09 | — | Added the unit workspace response models and application service, mapping unit, property, building, lease, source evidence, validation results, issues, images, and work orders into a frontend-safe workspace response; added automated mapping coverage. |
+| 2026-09-09 | — | Added the unit workspace API, exposing a frontend-safe unit view with property and building details, lease information, source evidence, validation results, property issues, image assessments, and work orders; added end-to-end API integration tests. |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
