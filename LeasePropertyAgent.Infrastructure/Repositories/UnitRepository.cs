@@ -35,4 +35,18 @@ public class UnitRepository : IUnitRepository
                 unit => unit.UnitNumber == unitNumber,
                 cancellationToken);
     }
+    public async Task<Unit?> GetByIdAsync(
+    Guid unitId,
+    CancellationToken cancellationToken = default)
+{
+    if (unitId == Guid.Empty)
+    {
+        return null;
+    }
+
+    return await _dbContext.Units
+        .FirstOrDefaultAsync(
+            unit => unit.Id == unitId,
+            cancellationToken);
+}
 }

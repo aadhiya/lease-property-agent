@@ -6,6 +6,8 @@ using LeasePropertyAgent.Infrastructure.LeaseAgents;
 using LeasePropertyAgent.Application.Services;
 using LeasePropertyAgent.Infrastructure.Repositories;
 using LeasePropertyAgent.Infrastructure.Providers;
+using LeasePropertyAgent.Infrastructure.IssueAgents;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,9 @@ builder.Services.AddScoped<IOwnerRulesetProvider>(_ =>
 
 builder.Services.AddScoped<IPropertyCatalogSeeder, JsonPropertyCatalogSeeder>();
 builder.Services.AddScoped<ILeaseValidationService, LeaseValidationService>();
+builder.Services.AddScoped<IIssueAgent, StubIssueAgent>();
+builder.Services.AddScoped<IIssueProcessingService, IssueProcessingService>();
+builder.Services.AddScoped<IIssueRepository, IssueRepository>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -50,3 +55,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+public partial class Program
+{
+}

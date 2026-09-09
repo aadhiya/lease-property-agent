@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.20" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
@@ -28,6 +29,7 @@
     <ProjectReference Include="..\LeasePropertyAgent.Application\LeasePropertyAgent.Application.csproj" />
     <ProjectReference Include="..\LeasePropertyAgent.Domain\LeasePropertyAgent.Domain.csproj" />
     <ProjectReference Include="..\LeasePropertyAgent.Infrastructure\LeasePropertyAgent.Infrastructure.csproj" />
+    <ProjectReference Include="..\LeasePropertyAgent.Api\LeasePropertyAgent.Api.csproj" />
   </ItemGroup>
 
 </Project>

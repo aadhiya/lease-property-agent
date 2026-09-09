@@ -362,31 +362,36 @@ public class LeaseProcessingServiceTests
         }
     }
 
-    private sealed class FakeUnitRepository : IUnitRepository
+   private sealed class FakeUnitRepository : IUnitRepository
+{
+    private readonly Unit? _unit;
+
+    public bool WasCalled { get; private set; }
+
+    public string? ReceivedUnitNumber { get; private set; }
+
+    public FakeUnitRepository(Unit? unit)
     {
-        private readonly Unit? _unit;
-
-        public bool WasCalled { get; private set; }
-
-        public string? ReceivedUnitNumber { get; private set; }
-
-        public FakeUnitRepository(Unit? unit)
-        {
-            _unit = unit;
-        }
-
-        public Task<Unit?> GetByUnitNumberAsync(
-            string unitNumber,
-            CancellationToken cancellationToken = default)
-        {
-            WasCalled = true;
-            ReceivedUnitNumber = unitNumber;
-
-            return Task.FromResult(_unit);
-        }
+        _unit = unit;
     }
 
-    private sealed class FakeLeaseRepository : ILeaseRepository
+    public Task<Unit?> GetByUnitNumberAsync(
+        string unitNumber,
+        CancellationToken cancellationToken = default)
+    {
+        WasCalled = true;
+        ReceivedUnitNumber = unitNumber;
+
+        return Task.FromResult(_unit);
+    }
+
+    public Task<Unit?> GetByIdAsync(
+        Guid unitId,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<Unit?>(null);
+    }
+}    private sealed class FakeLeaseRepository : ILeaseRepository
     {
         public bool AddWasCalled { get; private set; }
 
