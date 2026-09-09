@@ -11,4 +11,7 @@ public class IssueImage
     public string FilePath { get; set; } = string.Empty;
 
     public Issue? Issue { get; set; }
+    public string? Observation { get; set; }
+
+public decimal? Confidence { get; set; }
 }

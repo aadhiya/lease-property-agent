@@ -3,6 +3,7 @@ using System;
 using LeasePropertyAgent.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LeasePropertyAgent.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(LeasePropertyDbContext))]
-    partial class LeasePropertyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260909111329_AddIssueImageAssessment")]
+    partial class AddIssueImageAssessment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.20");
