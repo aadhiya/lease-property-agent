@@ -286,5 +286,11 @@ public class UnitWorkspaceServiceTests
 
             return Task.FromResult<Unit?>(null);
         }
+
+        public Task<List<Unit>> GetAllAsync(
+    CancellationToken cancellationToken = default)
+{
+    return Task.FromResult(new List<Unit>());
+}
     }
 }

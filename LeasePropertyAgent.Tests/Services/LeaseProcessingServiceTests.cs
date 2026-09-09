@@ -397,6 +397,11 @@ public class LeaseProcessingServiceTests
     {
         return Task.FromResult<Unit?>(null);
     }
+    public Task<List<Unit>> GetAllAsync(
+    CancellationToken cancellationToken = default)
+{
+    return Task.FromResult(new List<Unit>());
+}
 }    private sealed class FakeLeaseRepository : ILeaseRepository
     {
         public bool AddWasCalled { get; private set; }

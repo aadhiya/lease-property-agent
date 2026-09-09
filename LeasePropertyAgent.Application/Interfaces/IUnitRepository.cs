@@ -20,4 +20,6 @@ public interface IUnitRepository
         Task<Unit?> GetWorkspaceByIdAsync(
         Guid unitId,
         CancellationToken cancellationToken = default);
+        Task<List<Unit>> GetAllAsync(
+    CancellationToken cancellationToken = default);
 }

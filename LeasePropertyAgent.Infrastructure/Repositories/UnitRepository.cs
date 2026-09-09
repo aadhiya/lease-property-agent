@@ -85,4 +85,12 @@ public async Task<Unit?> GetWorkspaceByIdAsync(
             unit => unit.Id == unitId,
             cancellationToken);
 }
+public async Task<List<Unit>> GetAllAsync(
+    CancellationToken cancellationToken = default)
+{
+    return await _dbContext.Units
+        .AsNoTracking()
+        .OrderBy(unit => unit.UnitNumber)
+        .ToListAsync(cancellationToken);
+}
 }
