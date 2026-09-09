@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeasePropertyAgent.Tests.Integration;
-
+[Collection("IntegrationTests")]
 public class IssuePersistenceTests
 {
     [Fact]

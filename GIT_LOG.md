@@ -31,6 +31,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-09 | — | Added the property issue agent workflow, including image-based condition assessment, image-level evidence and confidence, draft work-order generation, SQLite persistence, API endpoint, clean response DTOs, and end-to-end integration tests. |
 | 2026-09-09 | — | Added the human review workflow for lease fields, lease flags, and work orders, including accept/reject/edit actions, audit history through ReviewAction, SQLite persistence, and integration tests. | 
 | 2026-09-09 | — | Added review API endpoints for lease fields, lease flags, and work orders, exposing the human review workflow through HTTP endpoints with validation and not-found handling. | 
+| 2026-09-09 | — | Added HTTP integration coverage for the human review API, verifying lease field, lease flag, and work-order review endpoints, persistence, audit actions, and not-found handling; also isolated database integration tests from parallel execution. |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
