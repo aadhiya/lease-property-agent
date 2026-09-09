@@ -40,6 +40,8 @@ builder.Services.AddScoped<ILeaseValidationService, LeaseValidationService>();
 builder.Services.AddScoped<IIssueAgent, StubIssueAgent>();
 builder.Services.AddScoped<IIssueProcessingService, IssueProcessingService>();
 builder.Services.AddScoped<IIssueRepository, IssueRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

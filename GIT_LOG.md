@@ -28,7 +28,8 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-08 | — | Connected lease processing to persistence abstractions, including database unit resolution, domain mapping of extracted fields and flags, validation result persistence, and repository-based lease saving. |
 | 2026-09-08 | — | Added an integration test for complete lease aggregate persistence using SQLite, covering the property/building/unit hierarchy, lease parties, extracted fields and source evidence, flags, and validation results. Verified the persisted aggregate can be reloaded correctly from the database. |
 | 2026-09-09 | — | Extended issue image persistence with agent-generated observations and confidence scores, added the corresponding EF Core migration, and verified the database update with the full test suite. |
-| 2026-09-09 | — | Added the property issue agent workflow, including image-based condition assessment, image-level evidence and confidence, draft work-order generation, SQLite persistence, API endpoint, clean response DTOs, and end-to-end integration tests. | 
+| 2026-09-09 | — | Added the property issue agent workflow, including image-based condition assessment, image-level evidence and confidence, draft work-order generation, SQLite persistence, API endpoint, clean response DTOs, and end-to-end integration tests. |
+| 2026-09-09 | — | Added the human review workflow for lease fields, lease flags, and work orders, including accept/reject/edit actions, audit history through ReviewAction, SQLite persistence, and integration tests. | 
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
