@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import { getUnitWorkspace } from "./api/workspaceApi";
 import apiClient from "./api/client";
+import { processIssue } from "./api/issueApi";
 import {
   reviewLeaseField,
   reviewLeaseFlag,
@@ -17,7 +18,8 @@ function App() {
   const [loadingWorkspace, setLoadingWorkspace] = useState(false);
   const [error, setError] = useState("");
 const [reviewingId, setReviewingId] = useState("");
-
+const [issueImages, setIssueImages] = useState([]);
+const [processingIssue, setProcessingIssue] = useState(false);
   const loadWorkspace = useCallback(async (unitId) => {
     try {
       setLoadingWorkspace(true);
@@ -102,6 +104,35 @@ const [reviewingId, setReviewingId] = useState("");
       setReviewingId("");
     }
   };
+
+  const handleProcessIssue = async () => {
+  if (!selectedUnitId || issueImages.length === 0) {
+    setError("Please select at least one property image.");
+    return;
+  }
+
+  try {
+    setProcessingIssue(true);
+    setError("");
+
+    const images = issueImages.map((file) => ({
+      fileName: file.name,
+      filePath: file.name,
+    }));
+
+    await processIssue(selectedUnitId, images);
+
+    setIssueImages([]);
+
+    await loadWorkspace(selectedUnitId);
+  } catch (err) {
+    console.error(err);
+    setError("Unable to process the property issue.");
+  } finally {
+    setProcessingIssue(false);
+  }
+};
+
   useEffect(() => {
     let cancelled = false;
 
@@ -235,7 +266,12 @@ const [reviewingId, setReviewingId] = useState("");
   onReviewField={handleLeaseFieldReview}
   onReviewFlag={handleLeaseFlagReview}
 />
-
+<IssueReporter
+  issueImages={issueImages}
+  setIssueImages={setIssueImages}
+  processingIssue={processingIssue}
+  onProcessIssue={handleProcessIssue}
+/>
               <IssuesPanel
   issues={workspace.issues}
   unitNumber={workspace.unitNumber}
@@ -590,7 +626,81 @@ function LeasePanel({
     </div>
   );
 }
+function IssueReporter({
+  issueImages,
+  setIssueImages,
+  processingIssue,
+  onProcessIssue,
+}) {
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files || []);
 
+    setIssueImages(files);
+  };
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <div>
+          <span className="label">Property Inspection</span>
+          <h3>Report Property Issue</h3>
+        </div>
+      </div>
+
+      <div className="card-body">
+        <p className="muted">
+          Add property photos and let the issue agent assess the
+          condition and prepare a draft work order.
+        </p>
+
+        <div className="issue-upload">
+          <label htmlFor="issue-images">
+            Property photos
+          </label>
+
+          <input
+            id="issue-images"
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+            disabled={processingIssue}
+          />
+        </div>
+
+        {issueImages.length > 0 && (
+          <div className="selected-images">
+            <span className="field-label">
+              Selected photos
+            </span>
+
+            {issueImages.map((file) => (
+              <div
+                className="selected-image"
+                key={`${file.name}-${file.lastModified}`}
+              >
+                {file.name}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={onProcessIssue}
+          disabled={
+            processingIssue ||
+            issueImages.length === 0
+          }
+        >
+          {processingIssue
+            ? "Analyzing..."
+            : "Analyze Property Issue"}
+        </button>
+      </div>
+    </div>
+  );
+}
 function IssuesPanel({
   issues,
   unitNumber,
