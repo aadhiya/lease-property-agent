@@ -70,21 +70,23 @@ var app = builder.Build();
 
 // Make sure the development database exists
 // and synchronize the property catalog from units.json.
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var dbContext =
-        scope.ServiceProvider
-            .GetRequiredService<LeasePropertyDbContext>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext =
+            scope.ServiceProvider
+                .GetRequiredService<LeasePropertyDbContext>();
 
-    await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.EnsureCreatedAsync();
 
-    var seeder =
-        scope.ServiceProvider
-            .GetRequiredService<IPropertyCatalogSeeder>();
+        var seeder =
+            scope.ServiceProvider
+                .GetRequiredService<IPropertyCatalogSeeder>();
 
-    await seeder.SeedAsync();
+        await seeder.SeedAsync();
+    }
 }
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -36,6 +36,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-09 | — | Added the unit workspace API, exposing a frontend-safe unit view with property and building details, lease information, source evidence, validation results, property issues, image assessments, and work orders; added end-to-end API integration tests. |
 | 2026-09-09 | — | Added the unit listing API with repository and application service layers, exposing unit IDs, numbers, types, areas, and statuses for frontend workspace selection; added API integration tests including deterministic unit ordering. |
 | 2026-09-10 | — | Connected the React property workspace to the unit listing and workspace APIs, added live unit selection, workspace loading states, and empty-state handling for leases and property issues. | 
+| 2026-09-10 | — | Added the lease processing API and connected the frontend human-review workflow, allowing users to accept, reject, or edit extracted lease fields with source evidence and persisted review status; added integration test isolation and verified the full backend suite with 92/92 tests passing. |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:

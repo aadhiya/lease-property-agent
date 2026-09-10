@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import { getUnitWorkspace } from "./api/workspaceApi";
 import apiClient from "./api/client";
+import {
+  reviewLeaseField,
+  reviewLeaseFlag,
+  reviewWorkOrder,
+} from "./api/reviewApi";
 
 function App() {
   const [units, setUnits] = useState([]);
@@ -11,6 +16,7 @@ function App() {
   const [loadingUnits, setLoadingUnits] = useState(true);
   const [loadingWorkspace, setLoadingWorkspace] = useState(false);
   const [error, setError] = useState("");
+const [reviewingId, setReviewingId] = useState("");
 
   const loadWorkspace = useCallback(async (unitId) => {
     try {
@@ -28,7 +34,74 @@ function App() {
       setLoadingWorkspace(false);
     }
   }, []);
+  const handleLeaseFieldReview = async (
+    fieldId,
+    action,
+    reviewedValue = null
+  ) => {
+    try {
+      setReviewingId(fieldId);
+      setError("");
 
+      await reviewLeaseField(fieldId, {
+        action,
+        reviewedValue,
+      });
+
+      await loadWorkspace(selectedUnitId);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to update the lease field review.");
+    } finally {
+      setReviewingId("");
+    }
+  };
+
+  const handleLeaseFlagReview = async (
+    flagId,
+    action
+  ) => {
+    try {
+      setReviewingId(flagId);
+      setError("");
+
+      await reviewLeaseFlag(flagId, {
+        action,
+      });
+
+      await loadWorkspace(selectedUnitId);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to update the lease flag review.");
+    } finally {
+      setReviewingId("");
+    }
+  };
+
+  const handleWorkOrderReview = async (
+    workOrderId,
+    action,
+    title = null,
+    description = null
+  ) => {
+    try {
+      setReviewingId(workOrderId);
+      setError("");
+
+      await reviewWorkOrder(workOrderId, {
+        action,
+        title,
+        description,
+      });
+
+      await loadWorkspace(selectedUnitId);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to update the work order review.");
+    } finally {
+      setReviewingId("");
+    }
+  };
   useEffect(() => {
     let cancelled = false;
 
@@ -67,7 +140,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+}, [loadWorkspace]);
 
 
   return (
@@ -156,9 +229,19 @@ function App() {
             </section>
 
             <section className="workspace-grid">
-              <LeasePanel leases={workspace.leases} />
+              <LeasePanel
+  lease={workspace.leases[0]}
+  reviewingId={reviewingId}
+  onReviewField={handleLeaseFieldReview}
+  onReviewFlag={handleLeaseFlagReview}
+/>
 
-              <IssuesPanel issues={workspace.issues} />
+              <IssuesPanel
+  issues={workspace.issues}
+  unitNumber={workspace.unitNumber}
+  reviewingId={reviewingId}
+  onReviewWorkOrder={handleWorkOrderReview}
+/>
             </section>
           </>
         )}
@@ -167,8 +250,13 @@ function App() {
   );
 }
 
-function LeasePanel({ leases }) {
-  if (!leases || leases.length === 0) {
+function LeasePanel({
+  lease,
+  reviewingId,
+  onReviewField,
+  onReviewFlag,
+}) {
+  if (!lease) {
     return (
       <div className="card">
         <div className="card-header">
@@ -183,7 +271,7 @@ function LeasePanel({ leases }) {
     );
   }
 
-  const lease = leases[0];
+
 
   return (
     <div className="card">
@@ -257,40 +345,120 @@ function LeasePanel({ leases }) {
         </div>
 
         <div className="section">
-          <h4>Extracted Fields</h4>
+  <h4>Extracted Fields</h4>
 
-          {lease.fields.length === 0 ? (
-            <p className="muted">No extracted fields.</p>
-          ) : (
-            <div className="field-list">
-              {lease.fields.map((field) => (
-                <div className="field-row" key={field.id}>
-                  <div>
-                    <strong>{field.fieldName}</strong>
+  {lease.fields.length === 0 ? (
+    <p className="muted">No extracted fields.</p>
+  ) : (
+    <div className="field-list">
+      {lease.fields.map((field) => {
+        const isReviewing = reviewingId === field.id;
 
-                    <span className="field-value">
-                      {field.reviewedValue ||
-                        field.extractedValue ||
-                        "—"}
-                    </span>
+        return (
+          <div className="field-row" key={field.id}>
+            <div className="field-content">
+              <strong>{field.fieldName}</strong>
 
-                    {field.sourcePage && (
-                      <span className="source">
-                        Page {field.sourcePage}
-                      </span>
-                    )}
-                  </div>
+              <span className="field-value">
+                {field.reviewedValue ||
+                  field.extractedValue ||
+                  "—"}
+              </span>
 
-                  <span className="confidence">
-                    {field.confidence != null
-                      ? `${Math.round(field.confidence * 100)}%`
-                      : "—"}
+              <div className="field-evidence">
+                {field.sourcePage && (
+                  <span className="source">
+                    Page {field.sourcePage}
                   </span>
-                </div>
-              ))}
+                )}
+
+                {field.sourceText && (
+                  <span className="source-text">
+                    "{field.sourceText}"
+                  </span>
+                )}
+              </div>
+
+              <div className="field-review-actions">
+                <button
+                  type="button"
+                  disabled={isReviewing}
+                  onClick={() =>
+                    onReviewField(
+                      field.id,
+                      "accept"
+                    )
+                  }
+                >
+                  Accept
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={isReviewing}
+                  onClick={() =>
+                    onReviewField(
+                      field.id,
+                      "reject"
+                    )
+                  }
+                >
+                  Reject
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={isReviewing}
+                  onClick={() => {
+                    const currentValue =
+                      field.reviewedValue ||
+                      field.extractedValue ||
+                      "";
+
+                    const newValue =
+                      window.prompt(
+                        `Edit ${field.fieldName}`,
+                        currentValue
+                      );
+
+                    if (
+                      newValue !== null &&
+                      newValue.trim() !== ""
+                    ) {
+                      onReviewField(
+                        field.id,
+                        "edit",
+                        newValue.trim()
+                      );
+                    }
+                  }}
+                >
+                  Edit
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+
+            <div className="field-meta">
+              <span className="confidence">
+                {field.confidence != null
+                  ? `${Math.round(
+                      field.confidence * 100
+                    )}%`
+                  : "—"}
+              </span>
+
+              <span className="review-status">
+                {field.reviewStatus}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
 
         <div className="section">
           <h4>Validation</h4>
@@ -323,43 +491,112 @@ function LeasePanel({ leases }) {
         </div>
 
         <div className="section">
-          <h4>Flags</h4>
+  <h4>Flags</h4>
 
-          {lease.flags.length === 0 ? (
-            <p className="muted">
-              No flags detected.
-            </p>
-          ) : (
-            <div className="flag-list">
-              {lease.flags.map((flag) => (
-                <div className="flag-row" key={flag.id}>
-                  <div>
-                    <strong>{flag.type}</strong>
-                    <span>{flag.message}</span>
+  {lease.flags.length === 0 ? (
+    <p className="muted">
+      No flags detected.
+    </p>
+  ) : (
+    <div className="flag-list">
+      {lease.flags.map((flag) => {
+        const isReviewing =
+          reviewingId === flag.id;
 
-                    {flag.sourcePage && (
-                      <small>
-                        Page {flag.sourcePage}
-                      </small>
-                    )}
-                  </div>
+        return (
+          <div
+            className="flag-row"
+            key={flag.id}
+          >
+            <div className="flag-content">
+              <strong>{flag.type}</strong>
 
-                  <span
-                    className={`severity ${flag.severity.toLowerCase()}`}
-                  >
-                    {flag.severity}
-                  </span>
-                </div>
-              ))}
+              <span>{flag.message}</span>
+
+              {flag.sourcePage && (
+                <small>
+                  Page {flag.sourcePage}
+                </small>
+              )}
+
+              {flag.sourceText && (
+                <small className="source-text">
+                  "{flag.sourceText}"
+                </small>
+              )}
+
+              <div className="field-review-actions">
+                <button
+                  type="button"
+                  disabled={isReviewing}
+                  onClick={() =>
+                    onReviewFlag(
+                      flag.id,
+                      "accept"
+                    )
+                  }
+                >
+                  Accept
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={isReviewing}
+                  onClick={() =>
+                    onReviewFlag(
+                      flag.id,
+                      "reject"
+                    )
+                  }
+                >
+                  Reject
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={isReviewing}
+                  onClick={() =>
+                    onReviewFlag(
+                      flag.id,
+                      "dismiss"
+                    )
+                  }
+                >
+                  Dismiss
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+
+            <div className="flag-meta">
+              <span
+                className={`severity ${flag.severity.toLowerCase()}`}
+              >
+                {flag.severity}
+              </span>
+
+              <span className="review-status">
+                {flag.status}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
       </div>
     </div>
   );
 }
 
-function IssuesPanel({ issues }) {
+function IssuesPanel({
+  issues,
+  unitNumber,
+  reviewingId,
+  onReviewWorkOrder,
+}) {
   if (!issues || issues.length === 0) {
     return (
       <div className="card">
@@ -451,21 +688,108 @@ function IssuesPanel({ issues }) {
               <div className="section">
                 <h4>Work Orders</h4>
 
-                {issue.workOrders.map((workOrder) => (
-                  <div
-                    className="work-order"
-                    key={workOrder.id}
-                  >
-                    <div>
-                      <strong>{workOrder.title}</strong>
-                      <p>{workOrder.description}</p>
-                    </div>
+                {issue.workOrders?.map((workOrder) => {
+  const isReviewing =
+    reviewingId === workOrder.id;
 
-                    <span className="review-status">
-                      {workOrder.status}
-                    </span>
-                  </div>
-                ))}
+  return (
+    <div
+      className="work-order-card"
+      key={workOrder.id}
+    >
+      <div className="work-order-header">
+        <div>
+          <div className="work-order-label">
+            DRAFT WORK ORDER
+          </div>
+
+          <h4>{workOrder.title}</h4>
+        </div>
+
+        <span className="review-status">
+          {workOrder.status}
+        </span>
+      </div>
+
+      <p>{workOrder.description}</p>
+
+      <div className="work-order-unit">
+        Affected unit:{" "}
+        <strong>{unitNumber}</strong>
+      </div>
+
+      <div className="review-actions">
+        <button
+          type="button"
+          disabled={isReviewing}
+          onClick={() =>
+            onReviewWorkOrder(
+              workOrder.id,
+              "accept"
+            )
+          }
+        >
+          Accept
+        </button>
+
+        <button
+          type="button"
+          className="secondary-action"
+          disabled={isReviewing}
+          onClick={() =>
+            onReviewWorkOrder(
+              workOrder.id,
+              "reject"
+            )
+          }
+        >
+          Reject
+        </button>
+
+        <button
+          type="button"
+          className="secondary-action"
+          disabled={isReviewing}
+          onClick={() => {
+            const newTitle =
+              window.prompt(
+                "Work order title",
+                workOrder.title
+              );
+
+            if (newTitle === null) {
+              return;
+            }
+
+            const newDescription =
+              window.prompt(
+                "Work order description",
+                workOrder.description
+              );
+
+            if (newDescription === null) {
+              return;
+            }
+
+            if (
+              newTitle.trim() &&
+              newDescription.trim()
+            ) {
+              onReviewWorkOrder(
+                workOrder.id,
+                "edit",
+                newTitle.trim(),
+                newDescription.trim()
+              );
+            }
+          }}
+        >
+          Edit
+        </button>
+      </div>
+    </div>
+  );
+})}
               </div>
             )}
           </div>

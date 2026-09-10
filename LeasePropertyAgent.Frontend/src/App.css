@@ -450,4 +450,84 @@
   .image-evidence {
     flex-direction: column;
   }
+  .field-content,
+.flag-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.source-text {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.field-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.field-review-actions button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #0f172a;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.field-review-actions button:hover {
+  opacity: 0.85;
+}
+
+.field-review-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.field-review-actions .secondary-action {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.field-meta,
+.flag-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.review-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.flag-content small {
+  display: block;
+}
+
+.flag-content .source-text {
+  margin-top: 2px;
+}
 }

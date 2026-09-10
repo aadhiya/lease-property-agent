@@ -10,12 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace LeasePropertyAgent.Tests.Integration;
 
 [Collection("IntegrationTests")]
-public class UnitApiTests : IClassFixture<WebApplicationFactory<Program>>
-{
-    private readonly WebApplicationFactory<Program> _factory;
+public class UnitApiTests : IClassFixture<IntegrationTestFactory>
+{private readonly IntegrationTestFactory _factory;
 
     public UnitApiTests(
-        WebApplicationFactory<Program> factory)
+    IntegrationTestFactory factory)
     {
         _factory = factory;
     }

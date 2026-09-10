@@ -11,12 +11,11 @@ using Microsoft.Extensions.DependencyInjection;
 namespace LeasePropertyAgent.Tests.Integration;
 
 [Collection("IntegrationTests")]
-public class UnitWorkspaceApiTests : IClassFixture<WebApplicationFactory<Program>>
+public class UnitWorkspaceApiTests : IClassFixture<IntegrationTestFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly IntegrationTestFactory _factory;
 
-    public UnitWorkspaceApiTests(
-        WebApplicationFactory<Program> factory)
+    public UnitWorkspaceApiTests(IntegrationTestFactory factory)
     {
         _factory = factory;
     }
@@ -329,36 +328,51 @@ public class UnitWorkspaceApiTests : IClassFixture<WebApplicationFactory<Program
     }
 
     [Fact]
-    public async Task GetWorkspace_WithUnknownUnit_ShouldReturnNotFound()
+public async Task GetWorkspace_WithUnknownUnit_ShouldReturnNotFound()
+{
+    // Arrange
+    var client = _factory.CreateClient();
+
+    using (var scope = _factory.Services.CreateScope())
     {
-        // Arrange
-        var client = _factory.CreateClient();
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<LeasePropertyDbContext>();
 
-        var unitId = Guid.NewGuid();
-
-        // Act
-        var response = await client.GetAsync(
-            $"/api/units/{unitId}/workspace");
-
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.NotFound,
-            response.StatusCode);
+        await dbContext.Database.EnsureCreatedAsync();
     }
 
+    var unitId = Guid.NewGuid();
+
+    // Act
+    var response = await client.GetAsync(
+        $"/api/units/{unitId}/workspace");
+
+    // Assert
+    Assert.Equal(
+        HttpStatusCode.NotFound,
+        response.StatusCode);
+}
     [Fact]
-    public async Task GetWorkspace_WithEmptyUnitId_ShouldReturnNotFound()
+public async Task GetWorkspace_WithEmptyUnitId_ShouldReturnNotFound()
+{
+    // Arrange
+    var client = _factory.CreateClient();
+
+    using (var scope = _factory.Services.CreateScope())
     {
-        // Arrange
-        var client = _factory.CreateClient();
+        var dbContext = scope.ServiceProvider
+            .GetRequiredService<LeasePropertyDbContext>();
 
-        // Act
-        var response = await client.GetAsync(
-            "/api/units/00000000-0000-0000-0000-000000000000/workspace");
-
-        // Assert
-        Assert.Equal(
-            HttpStatusCode.NotFound,
-            response.StatusCode);
+        await dbContext.Database.EnsureCreatedAsync();
     }
+
+    // Act
+    var response = await client.GetAsync(
+        "/api/units/00000000-0000-0000-0000-000000000000/workspace");
+
+    // Assert
+    Assert.Equal(
+        HttpStatusCode.NotFound,
+        response.StatusCode);
+}
 }

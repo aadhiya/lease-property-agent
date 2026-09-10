@@ -7,14 +7,15 @@ using LeasePropertyAgent.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
+using LeasePropertyAgent.Tests.Integration;
 namespace LeasePropertyAgent.Tests;
 
-public class ReviewApiTests : IClassFixture<WebApplicationFactory<Program>>
+public class ReviewApiTests : IClassFixture<IntegrationTestFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+   private readonly IntegrationTestFactory _factory;
 
-    public ReviewApiTests(WebApplicationFactory<Program> factory)
+
+    public ReviewApiTests(IntegrationTestFactory factory)
     {
         _factory = factory;
     }
