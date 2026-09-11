@@ -106,7 +106,30 @@ The application provides a unit-centered workspace that displays:
 - Human review controls
 
 This allows a property manager to view the lease and operational issues for the same unit in one place.
+## Application Preview
+### Property workspace
 
+![Property workspace](docs/screenshots/property-workspace.png)
+
+The unit-centered workspace displays property details, lease information, validation results, property issues, and draft work orders.
+
+### Lease extraction and human review
+
+![Lease extraction and review](docs/screenshots/lease-review.png)
+
+Extracted lease fields include confidence, source evidence, and actions for accepting, editing, or rejecting the proposed value.
+
+### Lease validation
+
+![Lease validation](docs/screenshots/lease-validation.png)
+
+The validation panel evaluates extracted lease information against the owner-defined ruleset and displays the result and reason for each rule.
+
+### Property issue and work-order review
+
+![Property issue review](docs/screenshots/issue-work-order-review.png)
+
+The issue workflow presents the condition assessment and generated work order, allowing a human reviewer to accept, reject, or edit the draft.
 ## Architecture
 
 The solution is organized into separate layers to keep business logic, infrastructure, and API concerns isolated.
