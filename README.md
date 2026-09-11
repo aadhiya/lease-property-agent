@@ -125,11 +125,11 @@ Extracted lease fields include confidence, source evidence, and actions for acce
 
 The validation panel evaluates extracted lease information against the owner-defined ruleset and displays the result and reason for each rule.
 
-### Property issue and work-order review
+### Property issue review
 
 ![Property issue review](docs/screenshots/issue-work-order-review(1).png)
 
-And the analysis will be shown like this 
+### Property issue and work-order review  
 
 ![Property issue review](docs/screenshots/issue-work-order-review(2).png)
 
