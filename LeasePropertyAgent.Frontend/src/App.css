@@ -1,3 +1,7 @@
+/* =========================================================
+   GLOBAL APP LAYOUT
+   ========================================================= */
+
 #root {
   min-height: 100vh;
 }
@@ -7,6 +11,11 @@
   background: #f5f7fa;
   color: #172033;
 }
+
+
+/* =========================================================
+   APPLICATION HEADER
+   ========================================================= */
 
 .app-header {
   display: flex;
@@ -39,6 +48,11 @@
   font-size: 14px;
 }
 
+
+/* =========================================================
+   UNIT SELECTOR
+   ========================================================= */
+
 .unit-selector {
   min-width: 220px;
 }
@@ -60,7 +74,18 @@
   background: #ffffff;
   color: #172033;
   font-size: 14px;
+  cursor: pointer;
 }
+
+.unit-selector select:focus {
+  outline: 3px solid rgba(99, 102, 241, 0.15);
+  border-color: #6366f1;
+}
+
+
+/* =========================================================
+   ERROR AND LOADING STATES
+   ========================================================= */
 
 .error-banner {
   margin: 20px 40px 0;
@@ -72,16 +97,21 @@
   font-size: 14px;
 }
 
-.workspace {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 32px 40px;
-}
-
 .loading-state {
   padding: 80px 20px;
   color: #64748b;
   text-align: center;
+}
+
+
+/* =========================================================
+   MAIN WORKSPACE HEADER
+   ========================================================= */
+
+.workspace {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 40px;
 }
 
 .unit-header {
@@ -105,6 +135,7 @@
 .unit-header h2 {
   margin: 0;
   font-size: 30px;
+  line-height: 1.2;
 }
 
 .location {
@@ -126,6 +157,12 @@
   border-right: 1px solid #cbd5e1;
 }
 
+
+/* =========================================================
+   STATUS BADGES
+   ========================================================= */
+
+/* General unit status badge */
 .status,
 .review-status,
 .count-badge,
@@ -133,10 +170,12 @@
 .validation-status {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 5px 10px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .status.available {
@@ -144,22 +183,101 @@
   color: #166534;
 }
 
+.status.occupied {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status.maintenance {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.inactive {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* General review status */
 .review-status {
   background: #eef2ff;
   color: #4338ca;
 }
 
+/* Accepted review status */
+.review-status.accepted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* Rejected review status */
+.review-status.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Edited review status */
+.review-status.edited {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Pending review status */
+.review-status.pending {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+/* Draft work-order status */
+.review-status.draft {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .count-badge {
+  min-width: 32px;
   background: #f1f5f9;
   color: #475569;
 }
 
+
+/* =========================================================
+   MAIN TWO-COLUMN WORKSPACE
+   =========================================================
+
+   The lease and issues panels are displayed side by side
+   on desktop. The lease panel receives slightly more width
+   because it contains more information.
+   ========================================================= */
+
 .workspace-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
   gap: 24px;
   align-items: start;
 }
+
+/* Prevent long evidence text from expanding the grid */
+.workspace-grid > * {
+  min-width: 0;
+}
+
+/*
+   Keep the Issues panel visible while the user reviews
+   a long lease on desktop.
+
+   This assumes LeasePanel and IssuesPanel are siblings
+   inside .workspace-grid and IssuesPanel is the second child.
+*/
+.workspace-grid > :nth-child(2) {
+  position: sticky;
+  top: 24px;
+}
+
+
+/* =========================================================
+   CARD COMPONENTS
+   ========================================================= */
 
 .card {
   background: #ffffff;
@@ -181,17 +299,48 @@
 .card-header h3 {
   margin: 0;
   font-size: 19px;
+  line-height: 1.3;
 }
 
 .card-body {
   padding: 22px;
 }
 
+/*
+   Compact empty state.
+
+   The previous 70px vertical padding made an empty
+   Issues panel unnecessarily tall.
+*/
 .empty-state {
-  padding: 70px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+  padding: 36px 24px;
   color: #94a3b8;
   text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
 }
+
+.issue-empty-state strong {
+  color: #334155;
+  font-size: 14px;
+}
+
+.issue-empty-state span {
+  max-width: 280px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   LEASE SUMMARY
+   ========================================================= */
 
 .lease-summary {
   display: grid;
@@ -215,6 +364,11 @@
   font-size: 14px;
 }
 
+
+/* =========================================================
+   COMMON CONTENT SECTIONS
+   ========================================================= */
+
 .section {
   margin-top: 22px;
 }
@@ -222,7 +376,13 @@
 .section h4 {
   margin: 0 0 12px;
   font-size: 14px;
+  line-height: 1.3;
 }
+
+
+/* =========================================================
+   PARTY, FIELD, VALIDATION, FLAG, AND WORK-ORDER ROWS
+   ========================================================= */
 
 .party-row,
 .field-row,
@@ -277,6 +437,11 @@
   font-size: 12px;
 }
 
+
+/* =========================================================
+   PARTY SIGNATURE STATES
+   ========================================================= */
+
 .signed {
   color: #166534 !important;
   font-weight: 700;
@@ -287,12 +452,52 @@
   font-weight: 700;
 }
 
+
+/* =========================================================
+   EXTRACTED FIELD CONTENT AND EVIDENCE
+   ========================================================= */
+
+.field-content,
+.flag-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
 .field-value {
   color: #172033 !important;
+  font-size: 14px !important;
+  font-weight: 600;
+}
+
+.field-evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
 }
 
 .source {
   color: #6366f1 !important;
+  font-weight: 600;
+}
+
+.source-text {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.field-meta,
+.flag-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .confidence {
@@ -301,6 +506,120 @@
   font-size: 11px !important;
   font-weight: 700;
 }
+
+
+/* =========================================================
+   HUMAN REVIEW ACTIONS
+   =========================================================
+
+   These styles apply to lease-field, flag, and work-order
+   review buttons. They preserve the existing click handlers
+   while making the controls visually clearer.
+   ========================================================= */
+
+.field-review-actions,
+.flag-review-actions,
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.field-review-actions button,
+.flag-review-actions button,
+.review-actions button {
+  min-height: 30px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: #166534;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.field-review-actions button:hover,
+.flag-review-actions button:hover,
+.review-actions button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.field-review-actions button:active,
+.flag-review-actions button:active,
+.review-actions button:active {
+  transform: translateY(0);
+}
+
+.field-review-actions button:focus-visible,
+.flag-review-actions button:focus-visible,
+.review-actions button:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.2);
+  outline-offset: 2px;
+}
+
+.field-review-actions button:disabled,
+.flag-review-actions button:disabled,
+.review-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Neutral action, normally used for Edit */
+.field-review-actions .secondary-action,
+.flag-review-actions .secondary-action,
+.review-actions .secondary-action {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.field-review-actions .secondary-action:hover,
+.flag-review-actions .secondary-action:hover,
+.review-actions .secondary-action:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Reject action */
+.field-review-actions .reject-action,
+.flag-review-actions .reject-action,
+.review-actions .reject-action {
+  background: #ffffff;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.field-review-actions .reject-action:hover,
+.flag-review-actions .reject-action:hover,
+.review-actions .reject-action:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Accept action */
+.field-review-actions .accept-action,
+.flag-review-actions .accept-action,
+.review-actions .accept-action {
+  background: #166534;
+  border-color: #166534;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   VALIDATION STATUS BADGES
+   ========================================================= */
 
 .validation-status.pass {
   background: #dcfce7;
@@ -317,6 +636,11 @@
   color: #92400e;
 }
 
+
+/* =========================================================
+   FLAG SEVERITY BADGES
+   ========================================================= */
+
 .severity.low {
   background: #f1f5f9;
   color: #475569;
@@ -332,11 +656,10 @@
   color: #991b1b;
 }
 
-.muted {
-  margin: 0;
-  color: #94a3b8;
-  font-size: 13px;
-}
+
+/* =========================================================
+   PROPERTY ISSUES
+   ========================================================= */
 
 .issue {
   padding-bottom: 24px;
@@ -360,6 +683,7 @@
 .issue-heading h4 {
   margin: 0;
   font-size: 16px;
+  line-height: 1.3;
 }
 
 .issue-heading p {
@@ -369,10 +693,16 @@
   line-height: 1.5;
 }
 
+
+/* =========================================================
+   AI CONDITION ASSESSMENT
+   ========================================================= */
+
 .assessment {
   margin-top: 18px;
   padding: 14px;
-  border-radius: 8px;
+  border: 1px solid #e8edf3;
+  border-radius: 10px;
   background: #f8fafc;
 }
 
@@ -383,6 +713,11 @@
   line-height: 1.5;
 }
 
+
+/* =========================================================
+   IMAGE EVIDENCE
+   ========================================================= */
+
 .image-evidence {
   display: flex;
   align-items: flex-start;
@@ -391,13 +726,30 @@
 
 .image-evidence > * {
   flex: 1;
+  min-width: 0;
 }
 
+.image-evidence strong {
+  color: #172033;
+  overflow-wrap: anywhere;
+}
+
+.image-evidence span {
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   WORK ORDERS
+   ========================================================= */
+
 .work-order {
-  padding: 14px;
+  display: block;
+  padding: 16px;
+  margin-bottom: 12px;
   border: 1px solid #e3e7ed;
-  border-radius: 8px;
-  margin-bottom: 10px;
+  border-radius: 10px;
+  background: #ffffff;
 }
 
 .work-order:last-child {
@@ -405,9 +757,66 @@
 }
 
 .work-order p {
-  margin-bottom: 0;
+  margin: 12px 0 0;
+  color: #475569;
   line-height: 1.5;
 }
+
+.work-order-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.work-order-label {
+  margin-bottom: 5px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.work-order-header h4 {
+  margin: 0;
+  color: #172033;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.work-order-unit {
+  margin-top: 14px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.work-order-unit strong {
+  display: inline;
+  color: #172033;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   DESKTOP/TABLET RESPONSIVE LAYOUT
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .workspace-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+    gap: 18px;
+  }
+
+  .workspace {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+
+/* =========================================================
+   TABLET AND MOBILE LAYOUT
+   ========================================================= */
 
 @media (max-width: 900px) {
   .app-header {
@@ -417,6 +826,7 @@
 
   .unit-selector {
     width: 100%;
+    max-width: 420px;
   }
 
   .workspace {
@@ -424,8 +834,17 @@
     padding-right: 20px;
   }
 
+  /*
+     Stack lease and issues vertically on smaller screens.
+     Sticky positioning is disabled so the page scrolls
+     naturally on mobile and tablet devices.
+  */
   .workspace-grid {
     grid-template-columns: 1fr;
+  }
+
+  .workspace-grid > :nth-child(2) {
+    position: static;
   }
 
   .unit-header {
@@ -434,100 +853,94 @@
   }
 }
 
+
+/* =========================================================
+   SMALL MOBILE DEVICES
+   ========================================================= */
+
 @media (max-width: 600px) {
   .app-header {
     padding: 22px 20px;
   }
 
-  .lease-summary {
-    grid-template-columns: 1fr;
+  .app-header h1 {
+    font-size: 24px;
+  }
+
+  .workspace {
+    padding: 20px 14px;
+  }
+
+  .unit-header h2 {
+    font-size: 24px;
   }
 
   .unit-meta {
     flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .unit-meta > span:not(.status) {
+    padding-right: 8px;
+  }
+
+  .card-header {
+    padding: 18px;
+  }
+
+  .card-body {
+    padding: 18px;
+  }
+
+  .lease-summary {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .party-row,
+  .field-row,
+  .validation-row,
+  .flag-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .field-meta,
+  .flag-meta {
+    align-items: flex-start;
   }
 
   .image-evidence {
     flex-direction: column;
+    gap: 5px;
   }
-  .field-content,
-.flag-content {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
 
-.field-evidence {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-top: 4px;
-}
+  .image-evidence > * {
+    flex: none;
+    width: 100%;
+  }
 
-.source-text {
-  color: #64748b;
-  font-size: 12px;
-  line-height: 1.4;
-  font-style: italic;
-}
+  .issue-heading,
+  .work-order-header {
+    flex-direction: column;
+    gap: 10px;
+  }
 
-.field-review-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
+  .review-actions,
+  .field-review-actions,
+  .flag-review-actions {
+    width: 100%;
+  }
 
-.field-review-actions button {
-  border: none;
-  border-radius: 6px;
-  padding: 6px 10px;
-  background: #0f172a;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-}
+  .review-actions button,
+  .field-review-actions button,
+  .flag-review-actions button {
+    flex: 1;
+    min-width: 80px;
+  }
 
-.field-review-actions button:hover {
-  opacity: 0.85;
-}
-
-.field-review-actions button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.field-review-actions .secondary-action {
-  background: #e2e8f0;
-  color: #334155;
-}
-
-.field-meta,
-.flag-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.review-status {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.flag-content small {
-  display: block;
-}
-
-.flag-content .source-text {
-  margin-top: 2px;
-}
+  .empty-state {
+    min-height: 110px;
+    padding: 28px 18px;
+  }
 }

@@ -38,6 +38,7 @@ This file tracks the major development milestones and corresponding Git commits 
 | 2026-09-10 | — | Connected the React property workspace to the unit listing and workspace APIs, added live unit selection, workspace loading states, and empty-state handling for leases and property issues. | 
 | 2026-09-10 | — | Added the lease processing API and connected the frontend human-review workflow, allowing users to accept, reject, or edit extracted lease fields with source evidence and persisted review status; added integration test isolation and verified the full backend suite with 92/92 tests passing. |
 | 2026-09-10 | — | Added the frontend property issue reporting workflow, allowing users to select property photos, submit them to the issue agent, review AI condition assessments and image evidence, and manage generated work orders through Accept, Reject, and Edit actions. |
+| 2026-09-11 | — | Polished the property workspace UI with a clearer two-column layout, grouped issue workflow, improved lease and issue presentation, responsive behavior, review controls, source evidence visibility, and compact empty states while preserving existing functionality. |
 ## Commit Convention
 
 This project follows Conventional Commit-style messages:
