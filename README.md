@@ -127,7 +127,11 @@ The validation panel evaluates extracted lease information against the owner-def
 
 ### Property issue and work-order review
 
-![Property issue review](docs/screenshots/issue-work-order-review.png)
+![Property issue review](docs/screenshots/issue-work-order-review(1).png)
+
+And the analysis will be shown like this 
+
+![Property issue review](docs/screenshots/issue-work-order-review(2).png)
 
 The issue workflow presents the condition assessment and generated work order, allowing a human reviewer to accept, reject, or edit the draft.
 ## Architecture
